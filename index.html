@@ -78,7 +78,6 @@ const IconByType = ({ type }) => {
 
 const EventCard = ({ event }) => (
   <div className="group relative bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100/60 flex flex-col h-full hover:-translate-y-1.5 overflow-hidden">
-    {/* Image Section - Edge-to-edge */}
     <div className="relative h-56 overflow-hidden bg-gray-100">
       <img src={event.image} alt={event.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
       <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -88,7 +87,6 @@ const EventCard = ({ event }) => (
       </div>
     </div>
     
-    {/* Content Section */}
     <div className="px-5 py-6 flex-1 flex flex-col relative">
       <div className="absolute -top-7 right-5 w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg border border-gray-50 z-10 group-hover:scale-110 transition-transform duration-300">
         <IconByType type={event.type} />
@@ -189,35 +187,38 @@ export default function App() {
   const [selectedDay, setSelectedDay] = useState(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const currentSchedule = tripData.days.find(d => d.day === selectedDay);
+
+  // 가장 안전한 방식(dangerouslySetInnerHTML)으로 CSS 스타일 주입
+  const globalStyles = `
+    @import url('https://fonts.googleapis.com/css2?family=Jua&family=Montserrat:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap');
+    
+    .font-jua { font-family: 'Jua', sans-serif; }
+    .font-montserrat { font-family: 'Montserrat', sans-serif; }
+    .font-playfair { font-family: 'Playfair Display', serif; }
+    
+    .custom-logo-text {
+      letter-spacing: -0.05em; 
+      line-height: 0.85;       
+    }
+    .custom-logo-text span {
+      display: block;
+    }
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up {
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  `;
   
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Montserrat:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap');
-        
-        .font-jua { font-family: 'Jua', sans-serif; }
-        .font-montserrat { font-family: 'Montserrat', sans-serif; }
-        .font-playfair { font-family: 'Playfair Display', serif; }
-        
-        .custom-logo-text {
-          letter-spacing: -0.05em; 
-          line-height: 0.85;       
-        }
-        .custom-logo-text span {
-          display: block;
-        }
-        
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
 
       {/* 1. Header (Vibe & Inspiration) */}
       <header className="relative flex flex-col w-full min-h-[650px] lg:min-h-[85vh] overflow-hidden bg-gray-900">
