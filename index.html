@@ -223,14 +223,13 @@ export default function App() {
       <header className="relative flex flex-col w-full min-h-[650px] lg:min-h-[85vh] overflow-hidden bg-gray-900">
         
         <div className="absolute inset-0 z-0">
-          {/* 아침/낮의 맑은 뷰로 원상복구 (어두운 필터 제거) */}
           <img 
             src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" 
             alt="Taipei City Morning Vibe" 
             className="w-full h-full object-cover object-center brightness-95"
           />
-          {/* 밝은 하늘을 유지하면서 하단 텍스트 가독성을 위해 아래쪽만 어둡게 처리 */}
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-900/10 via-transparent to-black/80" />
+          {/* 가독성을 높이기 위해 상단 그라데이션 강도를 약간 올렸습니다 */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
         </div>
         
         <nav className="relative z-10 w-full p-4 md:p-6 flex justify-between items-center text-white">
@@ -253,7 +252,9 @@ export default function App() {
 
         {/* Hero Content */}
         <div className="relative z-10 w-full px-6 md:px-12 pb-20 md:pb-28 max-w-6xl mx-auto flex flex-col justify-end">
-          <div className="inline-block border border-white/30 rounded-full px-4 py-1.5 mb-6 text-white/90 font-montserrat text-sm font-bold tracking-[0.2em] backdrop-blur-sm shadow-sm self-start">
+          
+          {/* 2025를 크고 확실하게 보이도록 배지에서 대형 텍스트로 변경 */}
+          <div className="text-4xl md:text-5xl lg:text-6xl font-montserrat font-black text-[#FFD700] mb-2 tracking-[0.15em] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] self-start">
             2025
           </div>
           
