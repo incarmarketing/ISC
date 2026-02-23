@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Clock, MapPin, Camera, Coffee, Utensils, Info, Menu, X, Plane, Ticket, Star, BedDouble, CalendarDays, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Clock, MapPin, Camera, Coffee, Utensils, Info, Menu, X, Plane, Ticket, Star, BedDouble, CalendarDays, ArrowRight, CloudSun, Droplets, Coins, TrendingUp, RefreshCcw } from 'lucide-react';
 
 // --- DATA: 여행 데이터 (ISC Taiwan 2025) ---
 const tripData = {
@@ -76,8 +76,99 @@ const IconByType = ({ type }) => {
   }
 };
 
+// -------------------------------------------------------------
+// NEW: 실시간 정보 위젯 (날씨 & 환율)
+// -------------------------------------------------------------
+const QuickInfoBoard = () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // 새로고침 애니메이션 시뮬레이션
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
+
+  return (
+    <div className="w-full flex flex-col md:flex-row gap-4 mb-10 mt-2">
+      
+      {/* 1. 타이베이 날씨 카드 */}
+      <div className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex items-center justify-between group hover:shadow-md transition-all relative overflow-hidden">
+        {/* 장식용 배경 요소 */}
+        <div className="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+        
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-inner">
+            <CloudSun className="w-7 h-7" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Taipei Weather</span>
+              {/* 맥박뛰는 라이브 인디케이터 */}
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              {/* 3월 대만 평균 기온 반영 */}
+              <span className="text-3xl font-black text-slate-800 font-montserrat tracking-tighter">22°C</span>
+              <span className="text-sm text-slate-500 font-medium font-jua">맑고 화창함</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* 추가 날씨 정보 */}
+        <div className="hidden sm:flex flex-col items-end gap-1 relative z-10 text-slate-500">
+          <div className="flex items-center gap-1.5 text-sm font-medium">
+            <Droplets className="w-3.5 h-3.5 text-blue-400" /> 습도 65%
+          </div>
+          <p className="text-xs opacity-70">어제보다 2° 높음</p>
+        </div>
+      </div>
+
+      {/* 2. 대만 환율 카드 */}
+      <div className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex items-center justify-between group hover:shadow-md transition-all relative overflow-hidden">
+        <div className="absolute -right-6 -top-6 w-24 h-24 bg-yellow-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+        
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-14 h-14 bg-gradient-to-br from-yellow-100 to-orange-50 rounded-2xl flex items-center justify-center text-yellow-600 shadow-inner">
+            <Coins className="w-7 h-7" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Exchange Rate</span>
+              <button 
+                onClick={handleRefresh}
+                className="text-slate-300 hover:text-blue-500 transition-colors"
+                title="환율 업데이트"
+              >
+                <RefreshCcw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-500' : ''}`} />
+              </button>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-slate-800 font-montserrat tracking-tighter">42.50</span>
+              <span className="text-sm font-bold text-slate-500 font-montserrat">KRW</span>
+              <span className="text-xs text-slate-400 font-jua border-l border-slate-200 pl-2 ml-1">1 TWD 기준</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden sm:flex flex-col items-end gap-1 relative z-10 text-emerald-500">
+          <div className="flex items-center gap-1 text-sm font-bold font-montserrat bg-emerald-50 px-2 py-0.5 rounded-md">
+            <TrendingUp className="w-3.5 h-3.5" /> +0.12
+          </div>
+          <p className="text-xs text-slate-400 opacity-70">실시간 송금환율</p>
+        </div>
+      </div>
+
+    </div>
+  );
+};
+// -------------------------------------------------------------
+
+
 const EventCard = ({ event }) => (
-  <div className="group relative bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100/60 flex flex-col h-full hover:-translate-y-1.5 overflow-hidden">
+  <div className="group relative bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-100/80 flex flex-col h-full hover:-translate-y-1.5 overflow-hidden">
     <div className="relative h-56 overflow-hidden bg-gray-100">
       <img src={event.image} alt={event.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
       <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -113,7 +204,7 @@ const EventCard = ({ event }) => (
 );
 
 const EndOfDayCard = ({ day }) => (
-  <div className="group relative overflow-hidden rounded-[2rem] shadow-sm border border-gray-100 h-full min-h-[300px] flex items-center justify-center p-3">
+  <div className="group relative overflow-hidden rounded-[2rem] shadow-sm border border-slate-100 h-full min-h-[300px] flex items-center justify-center p-3">
     <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden flex items-center justify-center">
         <img 
         src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800" 
@@ -188,7 +279,6 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const currentSchedule = tripData.days.find(d => d.day === selectedDay);
 
-  // 가장 안전한 방식(dangerouslySetInnerHTML)으로 CSS 스타일 주입
   const globalStyles = `
     @import url('https://fonts.googleapis.com/css2?family=Jua&family=Montserrat:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap');
     
@@ -283,11 +373,17 @@ export default function App() {
 
       {/* 2. Main Layout */}
       <main className="max-w-6xl mx-auto px-4 py-8 -mt-10 relative z-20">
-        <div className="mb-10">
+        
+        {/* NEW: 실시간 정보 위젯 (날씨 & 환율) */}
+        <div className="animate-fade-in-up">
+          <QuickInfoBoard />
+        </div>
+
+        <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
           <DayNavigator days={tripData.days} currentDay={selectedDay} onSelect={setSelectedDay} />
         </div>
 
-        <div className="animate-fade-in-up">
+        <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-end gap-4 mb-8 ml-2">
             <h2 className="text-5xl font-black text-slate-800 font-montserrat tracking-tighter drop-shadow-sm">Day {currentSchedule.day}</h2>
             <span className="text-xl text-slate-500 font-jua border-l-2 border-slate-300 pl-4 pb-1.5 opacity-90">
