@@ -1,286 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, MapPin, Camera, Coffee, Utensils, Info, Menu, X, Plane, Ticket, Star, BedDouble, CalendarDays, ArrowRight, CloudSun, Droplets, Coins, TrendingUp, RefreshCcw } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2025 INCAR Spring Camp in Taiwan</title>
 
-// --- DATA: 여행 데이터 (ISC Taiwan 2025) ---
-const tripData = {
-  title: "2025 INCAR Spring Camp",
-  subtitle: "in Taiwan",
-  dates: "2026.03.11 (수) - 03.14 (토)",
-  description: "미식과 풍경, 그리고 화합이 함께하는 타이베이 3박 4일 하이라이트 여정",
-  days: [
+  <!-- 1. Tailwind CSS (디자인 시스템) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 2. Babel (리액트 JSX 문법을 브라우저용으로 실시간 번역) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- 3. React 및 Lucide 아이콘 모듈 매핑 (ESM) -->
+  <script type="importmap">
     {
-      day: 1,
-      title: "설레는 시작, 타이베이",
-      date: "3월 11일 (수)",
-      theme: "City & History",
-      events: [
-        { time: "09:00", type: "move", title: "인천 출발", location: "ICN ✈️ TPE", note: "아시아나 OZ 711 / 대한항공 KE 2021 (기내식 포함)", image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800" },
-        { time: "12:30", type: "meal", title: "중식 | 우육면", location: "현지 맛집", note: "대만의 소울 푸드, 진한 국물의 우육면", image: "https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&q=80&w=800" },
-        { time: "13:30", type: "spot", title: "단수이 & 홍마오청", location: "Tamsui District", note: "붉은 벽돌의 역사와 말할 수 없는 비밀 촬영지", image: "https://images.unsplash.com/photo-1505342878433-4d7a5b328109?auto=format&fit=crop&q=80&w=800" },
-        { time: "16:30", type: "move", title: "호텔 체크인", location: "Taipei Marriott Hotel", note: "전 일정 5성급 특급 호텔 숙박", image: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&q=80&w=800" },
-        { time: "18:00", type: "meal", title: "석식 | 타카오1972", location: "Takao", note: "1인 1냄비로 즐기는 프리미엄 샤브샤브", image: "https://images.unsplash.com/photo-1549488344-c7388568e698?auto=format&fit=crop&q=80&w=800" },
-        { time: "19:30", type: "spot", title: "타이베이 101 전망대", location: "Taipei 101", note: "타이베이의 야경을 한눈에 담는 랜드마크", image: "https://images.unsplash.com/photo-1542998967-628d68965825?auto=format&fit=crop&q=80&w=800" }
-      ]
-    },
-    {
-      day: 2,
-      title: "힐링과 화합의 밤",
-      date: "3월 12일 (목)",
-      theme: "Choice & Party",
-      events: [
-        { time: "08:30", type: "spot", title: "[선택 1안] 티엔라이 온천", location: "Yangmingshan", note: "양명산의 자연을 바라보며 즐기는 유황 온천", image: "https://images.unsplash.com/photo-1573059226503-4d2d47e45f5b?auto=format&fit=crop&q=80&w=800" },
-        { time: "09:00", type: "spot", title: "[선택 2안] 고궁박물관", location: "National Palace Museum", note: "중국 5천년 역사의 보물 창고", image: "https://images.unsplash.com/photo-1595304328906-8d1964175510?auto=format&fit=crop&q=80&w=800" },
-        { time: "13:00", type: "meal", title: "중식 | 베이징덕", location: "Taipei City", note: "바삭한 껍질과 촉촉한 속살의 조화", image: "https://images.unsplash.com/photo-1593126927508-62d14216964a?auto=format&fit=crop&q=80&w=800" },
-        { time: "14:30", type: "spot", title: "서문정 (시먼딩)", location: "Ximending", note: "타이베이의 명동, 젊음과 활기의 거리", image: "https://images.unsplash.com/photo-1595568153400-b610c384666f?auto=format&fit=crop&q=80&w=800" },
-        { time: "18:00", type: "star", title: "INCAR 만찬 행사", location: "Grand Ballroom", note: "★필수 참석★ 화합과 축하의 밤", image: "https://images.unsplash.com/photo-1519750157634-b6d493a0ea29?auto=format&fit=crop&q=80&w=800" }
-      ]
-    },
-    {
-      day: 3,
-      title: "대만의 자연과 낭만",
-      date: "3월 13일 (금)",
-      theme: "Nature & Lanterns",
-      events: [
-        { time: "11:00", type: "spot", title: "예류 해양국립공원", location: "Yehliu Geopark", note: "자연이 조각한 기암괴석과 여왕머리 바위", image: "https://images.unsplash.com/photo-1634547481063-42e391b4274c?auto=format&fit=crop&q=80&w=800" },
-        { time: "12:30", type: "meal", title: "중식 | 해산물 요리", location: "Yehliu Area", note: "바다 향 가득한 신선한 현지 해산물", image: "https://images.unsplash.com/photo-1621251390333-30d8d754700d?auto=format&fit=crop&q=80&w=800" },
-        { time: "14:30", type: "spot", title: "스펀 천등 날리기", location: "Shifen Old Street", note: "기찻길 위에서 소원을 담아 날리는 천등", image: "https://images.unsplash.com/photo-1533284162033-90d1f108253a?auto=format&fit=crop&q=80&w=800" },
-        { time: "17:00", type: "spot", title: "지우펀 야경", location: "Jiufen", note: "홍등이 밝히는 좁은 골목의 몽환적 분위기", image: "https://images.unsplash.com/photo-1465258282302-3c87e1f40d05?auto=format&fit=crop&q=80&w=800" },
-        { time: "20:00", type: "meal", title: "야시장 및 석식", location: "Raohe Night Market", note: "지파이, 망고빙수 등 대만 길거리 음식 정복", image: "https://images.unsplash.com/photo-1526462770289-4b68426002f2?auto=format&fit=crop&q=80&w=800" }
-      ]
-    },
-    {
-      day: 4,
-      title: "굿바이, 타이베이",
-      date: "3월 14일 (토)",
-      theme: "Return",
-      events: [
-        { time: "09:00", type: "move", title: "호텔 체크아웃 & 공항 이동", location: "Taipei -> Airport", note: "가이드 미팅 후 전용 버스로 이동", image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800" },
-        { time: "11:40", type: "move", title: "타이베이 출발", location: "TPE ✈️ ICN", note: "OZ 712 / KE 2022 (소중한 추억을 안고 귀국)", image: "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&q=80&w=800" },
-        { time: "15:25", type: "home", title: "인천 도착", location: "Incheon Int'l Airport", note: "안전한 귀국, 수고하셨습니다!", image: "https://images.unsplash.com/photo-1542296332-2e44a99cfef9?auto=format&fit=crop&q=80&w=800" }
-      ]
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.344.0"
+      }
     }
-  ]
-};
+  </script>
 
-// --- COMPONENTS ---
-
-const IconByType = ({ type }) => {
-  switch (type) {
-    case 'meal': return <Utensils className="w-5 h-5 text-orange-500" />;
-    case 'spot': return <Camera className="w-5 h-5 text-blue-500" />;
-    case 'cafe': return <Coffee className="w-5 h-5 text-brown-500" />;
-    case 'move': return <Plane className="w-5 h-5 text-emerald-500" />;
-    case 'star': return <Star className="w-5 h-5 text-yellow-500" />;
-    case 'home': return <MapPin className="w-5 h-5 text-purple-500" />;
-    default: return <Ticket className="w-5 h-5 text-gray-500" />;
-  }
-};
-
-// -------------------------------------------------------------
-// NEW: 실시간 정보 위젯 (날씨 & 환율)
-// -------------------------------------------------------------
-const QuickInfoBoard = () => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // 새로고침 애니메이션 시뮬레이션
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 1000);
-  };
-
-  return (
-    <div className="w-full flex flex-col md:flex-row gap-4 mb-10 mt-2">
-      
-      {/* 1. 타이베이 날씨 카드 */}
-      <div className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex items-center justify-between group hover:shadow-md transition-all relative overflow-hidden">
-        {/* 장식용 배경 요소 */}
-        <div className="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
-        
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-inner">
-            <CloudSun className="w-7 h-7" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Taipei Weather</span>
-              {/* 맥박뛰는 라이브 인디케이터 */}
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              {/* 3월 대만 평균 기온 반영 */}
-              <span className="text-3xl font-black text-slate-800 font-montserrat tracking-tighter">22°C</span>
-              <span className="text-sm text-slate-500 font-medium font-jua">맑고 화창함</span>
-            </div>
-          </div>
-        </div>
-        
-        {/* 추가 날씨 정보 */}
-        <div className="hidden sm:flex flex-col items-end gap-1 relative z-10 text-slate-500">
-          <div className="flex items-center gap-1.5 text-sm font-medium">
-            <Droplets className="w-3.5 h-3.5 text-blue-400" /> 습도 65%
-          </div>
-          <p className="text-xs opacity-70">어제보다 2° 높음</p>
-        </div>
-      </div>
-
-      {/* 2. 대만 환율 카드 */}
-      <div className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex items-center justify-between group hover:shadow-md transition-all relative overflow-hidden">
-        <div className="absolute -right-6 -top-6 w-24 h-24 bg-yellow-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
-        
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="w-14 h-14 bg-gradient-to-br from-yellow-100 to-orange-50 rounded-2xl flex items-center justify-center text-yellow-600 shadow-inner">
-            <Coins className="w-7 h-7" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Exchange Rate</span>
-              <button 
-                onClick={handleRefresh}
-                className="text-slate-300 hover:text-blue-500 transition-colors"
-                title="환율 업데이트"
-              >
-                <RefreshCcw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-500' : ''}`} />
-              </button>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-slate-800 font-montserrat tracking-tighter">42.50</span>
-              <span className="text-sm font-bold text-slate-500 font-montserrat">KRW</span>
-              <span className="text-xs text-slate-400 font-jua border-l border-slate-200 pl-2 ml-1">1 TWD 기준</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="hidden sm:flex flex-col items-end gap-1 relative z-10 text-emerald-500">
-          <div className="flex items-center gap-1 text-sm font-bold font-montserrat bg-emerald-50 px-2 py-0.5 rounded-md">
-            <TrendingUp className="w-3.5 h-3.5" /> +0.12
-          </div>
-          <p className="text-xs text-slate-400 opacity-70">실시간 송금환율</p>
-        </div>
-      </div>
-
-    </div>
-  );
-};
-// -------------------------------------------------------------
-
-
-const EventCard = ({ event }) => (
-  <div className="group relative bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-100/80 flex flex-col h-full hover:-translate-y-1.5 overflow-hidden">
-    <div className="relative h-56 overflow-hidden bg-gray-100">
-      <img src={event.image} alt={event.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
-      <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      
-      <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-sm font-bold text-gray-800 shadow-sm flex items-center gap-1.5 font-montserrat">
-        <Clock className="w-4 h-4 text-blue-600" /> {event.time}
-      </div>
-    </div>
-    
-    <div className="px-5 py-6 flex-1 flex flex-col relative">
-      <div className="absolute -top-7 right-5 w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg border border-gray-50 z-10 group-hover:scale-110 transition-transform duration-300">
-        <IconByType type={event.type} />
-      </div>
-      
-      <h3 className={`text-xl font-bold mb-2 tracking-tight transition-colors ${event.type === 'star' ? 'text-purple-700' : 'text-gray-800 group-hover:text-blue-700'}`}>
-        {event.title}
-      </h3>
-      <div className="flex items-center text-gray-500 text-sm mb-4 font-medium">
-        <MapPin className="w-4 h-4 mr-1 text-gray-400" />
-        {event.location}
-      </div>
-      
-      {event.note && (
-        <div className={`mt-auto p-3.5 rounded-xl flex items-start gap-2.5 border ${event.type === 'star' ? 'bg-yellow-50/80 border-yellow-100/50' : 'bg-slate-50 border-slate-100'}`}>
-          <Info className={`w-4 h-4 flex-shrink-0 mt-0.5 ${event.type === 'star' ? 'text-yellow-600' : 'text-blue-500'}`} />
-          <p className={`text-sm leading-relaxed font-medium ${event.type === 'star' ? 'text-yellow-800' : 'text-slate-700'}`}>
-            {event.note}
-          </p>
-        </div>
-      )}
-    </div>
-  </div>
-);
-
-const EndOfDayCard = ({ day }) => (
-  <div className="group relative overflow-hidden rounded-[2rem] shadow-sm border border-slate-100 h-full min-h-[300px] flex items-center justify-center p-3">
-    <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden flex items-center justify-center">
-        <img 
-        src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800" 
-        alt="Relaxing Hotel Room" 
-        className="absolute inset-0 w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-700"
-        />
-        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors duration-500" />
-        <div className="relative z-10 text-center text-white p-6 transform group-hover:-translate-y-2 transition-transform duration-500">
-        <div className="bg-white/20 backdrop-blur-md p-4 rounded-full inline-block mb-4 shadow-lg border border-white/10">
-            <BedDouble className="w-8 h-8 text-white" />
-        </div>
-        <h3 className="text-2xl font-bold mb-2 tracking-wide">Day {day} 일정 종료</h3>
-        <p className="text-sm text-gray-200 font-light opacity-90">편안한 휴식으로 에너지를 충전하세요</p>
-        </div>
-    </div>
-  </div>
-);
-
-const DayNavigator = ({ days, currentDay, onSelect }) => (
-  <div className="flex overflow-x-auto pb-4 gap-3 no-scrollbar snap-x">
-    {days.map((d) => (
-      <button
-        key={d.day}
-        onClick={() => onSelect(d.day)}
-        className={`snap-center flex-shrink-0 px-7 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 border ${
-          currentDay === d.day
-            ? 'bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-600/20 scale-105 font-bold'
-            : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-        }`}
-      >
-        <span className="font-montserrat text-base">Day {d.day}</span>
-        <span className={`block text-xs mt-1 font-jua opacity-90 ${currentDay === d.day ? 'text-blue-100' : 'text-gray-400'}`}>
-          {d.date}
-        </span>
-      </button>
-    ))}
-  </div>
-);
-
-const MobileMenu = ({ isOpen, onClose, days, onSelectDay }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="absolute top-[80px] right-4 w-64 bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 p-2 overflow-hidden">
-      <div className="p-4 border-b border-gray-100 mb-2">
-        <h3 className="font-montserrat font-bold text-gray-800 text-lg">Quick Jump</h3>
-        <p className="text-xs text-gray-500">원하는 일정으로 바로 이동하세요</p>
-      </div>
-      <div className="flex flex-col gap-1">
-        {days.map((d) => (
-          <button
-            key={d.day}
-            onClick={() => {
-              onSelectDay(d.day);
-              onClose();
-            }}
-            className="flex items-center justify-between p-3.5 rounded-2xl hover:bg-slate-50 text-left group transition-colors"
-          >
-            <div>
-              <span className="font-bold text-blue-900 font-montserrat block">Day {d.day}</span>
-              <span className="text-xs text-gray-500 font-medium">{d.title}</span>
-            </div>
-            <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-transform group-hover:translate-x-1" />
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-export default function App() {
-  const [selectedDay, setSelectedDay] = useState(1);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const currentSchedule = tripData.days.find(d => d.day === selectedDay);
-
-  const globalStyles = `
+  <!-- 4. 글로벌 스타일 및 폰트 -->
+  <style>
     @import url('https://fonts.googleapis.com/css2?family=Jua&family=Montserrat:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap');
+    
+    body { margin: 0; background-color: #f8fafc; }
     
     .font-jua { font-family: 'Jua', sans-serif; }
     .font-montserrat { font-family: 'Montserrat', sans-serif; }
@@ -304,109 +50,355 @@ export default function App() {
     .animate-fade-in-up {
       animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-  `;
-  
-  return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100">
-      <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
+  </style>
+</head>
+<body>
+  <!-- 리액트 앱이 렌더링될 빈 도화지 -->
+  <div id="root"></div>
 
-      {/* 1. Header (Vibe & Inspiration) */}
-      <header className="relative flex flex-col w-full min-h-[650px] lg:min-h-[85vh] overflow-hidden bg-gray-900">
-        
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" 
-            alt="Taipei City Morning Vibe" 
-            className="w-full h-full object-cover object-center brightness-95"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
-        </div>
-        
-        <nav className="relative z-10 w-full p-4 md:p-6 flex justify-between items-center text-white">
-          <div className="text-lg md:text-xl font-black tracking-tight bg-black/20 backdrop-blur-md px-5 py-2 rounded-full border border-white/20 font-montserrat shadow-lg">
-            INCAR TRIP
-          </div>
-          
-          <div className="relative">
-            <button 
-                onClick={() => setIsMenuOpen(!isMenuOpen)} 
-                className={`p-3 rounded-full transition-all duration-300 shadow-md ${isMenuOpen ? 'bg-white text-gray-900 rotate-90' : 'bg-black/20 backdrop-blur-md text-white hover:bg-white/30 border border-white/20'}`}
-            >
-                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-            <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} days={tripData.days} onSelectDay={setSelectedDay} />
-          </div>
-        </nav>
+  <!-- 5. 리액트 앱 실제 구동 코드 -->
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect } from 'react';
+    import { createRoot } from 'react-dom/client';
+    import { Clock, MapPin, Camera, Coffee, Utensils, Info, Menu, X, Plane, Ticket, Star, BedDouble, CalendarDays, ArrowRight, CloudSun, Droplets, Coins, TrendingUp, RefreshCcw } from 'lucide-react';
 
-        <div className="relative z-10 flex-1 min-h-[40px]"></div>
+    // --- DATA: 여행 데이터 (ISC Taiwan 2025) ---
+    const tripData = {
+      title: "2025 INCAR Spring Camp",
+      subtitle: "in Taiwan",
+      dates: "2026.03.11 (수) - 03.14 (토)",
+      description: "미식과 풍경, 그리고 화합이 함께하는 타이베이 3박 4일 하이라이트 여정",
+      days: [
+        {
+          day: 1,
+          title: "설레는 시작, 타이베이",
+          date: "3월 11일 (수)",
+          theme: "City & History",
+          events: [
+            { time: "09:00", type: "move", title: "인천 출발", location: "ICN ✈️ TPE", note: "아시아나 OZ 711 / 대한항공 KE 2021 (기내식 포함)", image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800" },
+            { time: "12:30", type: "meal", title: "중식 | 우육면", location: "현지 맛집", note: "대만의 소울 푸드, 진한 국물의 우육면", image: "https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&q=80&w=800" },
+            { time: "13:30", type: "spot", title: "단수이 & 홍마오청", location: "Tamsui District", note: "붉은 벽돌의 역사와 말할 수 없는 비밀 촬영지", image: "https://images.unsplash.com/photo-1505342878433-4d7a5b328109?auto=format&fit=crop&q=80&w=800" },
+            { time: "16:30", type: "move", title: "호텔 체크인", location: "Taipei Marriott Hotel", note: "전 일정 5성급 특급 호텔 숙박", image: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&q=80&w=800" },
+            { time: "18:00", type: "meal", title: "석식 | 타카오1972", location: "Takao", note: "1인 1냄비로 즐기는 프리미엄 샤브샤브", image: "https://images.unsplash.com/photo-1549488344-c7388568e698?auto=format&fit=crop&q=80&w=800" },
+            { time: "19:30", type: "spot", title: "타이베이 101 전망대", location: "Taipei 101", note: "타이베이의 야경을 한눈에 담는 랜드마크", image: "https://images.unsplash.com/photo-1542998967-628d68965825?auto=format&fit=crop&q=80&w=800" }
+          ]
+        },
+        {
+          day: 2,
+          title: "힐링과 화합의 밤",
+          date: "3월 12일 (목)",
+          theme: "Choice & Party",
+          events: [
+            { time: "08:30", type: "spot", title: "[선택 1안] 티엔라이 온천", location: "Yangmingshan", note: "양명산의 자연을 바라보며 즐기는 유황 온천", image: "https://images.unsplash.com/photo-1573059226503-4d2d47e45f5b?auto=format&fit=crop&q=80&w=800" },
+            { time: "09:00", type: "spot", title: "[선택 2안] 고궁박물관", location: "National Palace Museum", note: "중국 5천년 역사의 보물 창고", image: "https://images.unsplash.com/photo-1595304328906-8d1964175510?auto=format&fit=crop&q=80&w=800" },
+            { time: "13:00", type: "meal", title: "중식 | 베이징덕", location: "Taipei City", note: "바삭한 껍질과 촉촉한 속살의 조화", image: "https://images.unsplash.com/photo-1593126927508-62d14216964a?auto=format&fit=crop&q=80&w=800" },
+            { time: "14:30", type: "spot", title: "서문정 (시먼딩)", location: "Ximending", note: "타이베이의 명동, 젊음과 활기의 거리", image: "https://images.unsplash.com/photo-1595568153400-b610c384666f?auto=format&fit=crop&q=80&w=800" },
+            { time: "18:00", type: "star", title: "INCAR 만찬 행사", location: "Grand Ballroom", note: "★필수 참석★ 화합과 축하의 밤", image: "https://images.unsplash.com/photo-1519750157634-b6d493a0ea29?auto=format&fit=crop&q=80&w=800" }
+          ]
+        },
+        {
+          day: 3,
+          title: "대만의 자연과 낭만",
+          date: "3월 13일 (금)",
+          theme: "Nature & Lanterns",
+          events: [
+            { time: "11:00", type: "spot", title: "예류 해양국립공원", location: "Yehliu Geopark", note: "자연이 조각한 기암괴석과 여왕머리 바위", image: "https://images.unsplash.com/photo-1634547481063-42e391b4274c?auto=format&fit=crop&q=80&w=800" },
+            { time: "12:30", type: "meal", title: "중식 | 해산물 요리", location: "Yehliu Area", note: "바다 향 가득한 신선한 현지 해산물", image: "https://images.unsplash.com/photo-1621251390333-30d8d754700d?auto=format&fit=crop&q=80&w=800" },
+            { time: "14:30", type: "spot", title: "스펀 천등 날리기", location: "Shifen Old Street", note: "기찻길 위에서 소원을 담아 날리는 천등", image: "https://images.unsplash.com/photo-1533284162033-90d1f108253a?auto=format&fit=crop&q=80&w=800" },
+            { time: "17:00", type: "spot", title: "지우펀 야경", location: "Jiufen", note: "홍등이 밝히는 좁은 골목의 몽환적 분위기", image: "https://images.unsplash.com/photo-1465258282302-3c87e1f40d05?auto=format&fit=crop&q=80&w=800" },
+            { time: "20:00", type: "meal", title: "야시장 및 석식", location: "Raohe Night Market", note: "지파이, 망고빙수 등 대만 길거리 음식 정복", image: "https://images.unsplash.com/photo-1526462770289-4b68426002f2?auto=format&fit=crop&q=80&w=800" }
+          ]
+        },
+        {
+          day: 4,
+          title: "굿바이, 타이베이",
+          date: "3월 14일 (토)",
+          theme: "Return",
+          events: [
+            { time: "09:00", type: "move", title: "호텔 체크아웃 & 공항 이동", location: "Taipei -> Airport", note: "가이드 미팅 후 전용 버스로 이동", image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800" },
+            { time: "11:40", type: "move", title: "타이베이 출발", location: "TPE ✈️ ICN", note: "OZ 712 / KE 2022 (소중한 추억을 안고 귀국)", image: "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&q=80&w=800" },
+            { time: "15:25", type: "home", title: "인천 도착", location: "Incheon Int'l Airport", note: "안전한 귀국, 수고하셨습니다!", image: "https://images.unsplash.com/photo-1542296332-2e44a99cfef9?auto=format&fit=crop&q=80&w=800" }
+          ]
+        }
+      ]
+    };
 
-        {/* Hero Content */}
-        <div className="relative z-10 w-full px-6 md:px-12 pb-20 md:pb-28 max-w-6xl mx-auto flex flex-col justify-end">
-          
-          <div className="text-4xl md:text-5xl lg:text-6xl font-montserrat font-black text-[#FFD700] mb-2 tracking-[0.15em] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] self-start">
-            2025
-          </div>
-          
-          <div className="inline-block relative self-start">
-              <h1 className="text-7xl sm:text-8xl md:text-[8rem] lg:text-[9.5rem] text-white font-playfair font-bold custom-logo-text drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] z-20 relative pr-4">
-                <span className="ml-[-0.05em]">Incar</span>
-                <span className="ml-[0.05em]">Spring Camp</span>
-              </h1>
-              
-              <p className="absolute -bottom-8 right-10 md:-bottom-12 md:right-16 lg:-bottom-14 lg:right-28 text-[#FFD700] text-3xl md:text-[2.5rem] font-playfair font-bold italic drop-shadow-lg tracking-wide z-30">
-                in Taiwan
-              </p>
-          </div>
-          
-          <div className="mt-20 flex flex-wrap items-center gap-3 text-white/90">
-            <div className="flex items-center gap-2 bg-blue-600/95 backdrop-blur-md px-5 py-3 rounded-2xl text-sm md:text-base font-bold shadow-xl shadow-blue-900/30 font-montserrat tracking-wide border border-blue-400/30">
-              <CalendarDays className="w-5 h-5" />
-              {tripData.dates}
+    // --- COMPONENTS ---
+    const IconByType = ({ type }) => {
+      switch (type) {
+        case 'meal': return <Utensils className="w-5 h-5 text-orange-500" />;
+        case 'spot': return <Camera className="w-5 h-5 text-blue-500" />;
+        case 'cafe': return <Coffee className="w-5 h-5 text-brown-500" />;
+        case 'move': return <Plane className="w-5 h-5 text-emerald-500" />;
+        case 'star': return <Star className="w-5 h-5 text-yellow-500" />;
+        case 'home': return <MapPin className="w-5 h-5 text-purple-500" />;
+        default: return <Ticket className="w-5 h-5 text-gray-500" />;
+      }
+    };
+
+    // 실시간 정보 위젯 (날씨 & 환율)
+    const QuickInfoBoard = () => {
+      const [isRefreshing, setIsRefreshing] = useState(false);
+
+      const handleRefresh = () => {
+        setIsRefreshing(true);
+        setTimeout(() => setIsRefreshing(false), 1000);
+      };
+
+      return (
+        <div className="w-full flex flex-col md:flex-row gap-4 mb-10 mt-2">
+          {/* 타이베이 날씨 카드 */}
+          <div className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex items-center justify-between group hover:shadow-md transition-all relative overflow-hidden">
+            <div className="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-inner">
+                <CloudSun className="w-7 h-7" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Taipei Weather</span>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-black text-slate-800 font-montserrat tracking-tighter">22°C</span>
+                  <span className="text-sm text-slate-500 font-medium font-jua">맑고 화창함</span>
+                </div>
+              </div>
             </div>
-            <span className="hidden lg:inline text-white/40 mx-2 text-xl font-light">|</span>
-            <p className="text-sm md:text-base text-gray-200 font-medium font-jua w-full lg:w-auto mt-3 lg:mt-0 drop-shadow-md">
-              {tripData.description}
-            </p>
+            <div className="hidden sm:flex flex-col items-end gap-1 relative z-10 text-slate-500">
+              <div className="flex items-center gap-1.5 text-sm font-medium">
+                <Droplets className="w-3.5 h-3.5 text-blue-400" /> 습도 65%
+              </div>
+              <p className="text-xs opacity-70">어제보다 2° 높음</p>
+            </div>
+          </div>
+
+          {/* 대만 환율 카드 */}
+          <div className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex items-center justify-between group hover:shadow-md transition-all relative overflow-hidden">
+            <div className="absolute -right-6 -top-6 w-24 h-24 bg-yellow-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-14 h-14 bg-gradient-to-br from-yellow-100 to-orange-50 rounded-2xl flex items-center justify-center text-yellow-600 shadow-inner">
+                <Coins className="w-7 h-7" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Exchange Rate</span>
+                  <button onClick={handleRefresh} className="text-slate-300 hover:text-blue-500 transition-colors" title="환율 업데이트">
+                    <RefreshCcw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-500' : ''}`} />
+                  </button>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-black text-slate-800 font-montserrat tracking-tighter">42.50</span>
+                  <span className="text-sm font-bold text-slate-500 font-montserrat">KRW</span>
+                  <span className="text-xs text-slate-400 font-jua border-l border-slate-200 pl-2 ml-1">1 TWD 기준</span>
+                </div>
+              </div>
+            </div>
+            <div className="hidden sm:flex flex-col items-end gap-1 relative z-10 text-emerald-500">
+              <div className="flex items-center gap-1 text-sm font-bold font-montserrat bg-emerald-50 px-2 py-0.5 rounded-md">
+                <TrendingUp className="w-3.5 h-3.5" /> +0.12
+              </div>
+              <p className="text-xs text-slate-400 opacity-70">실시간 송금환율</p>
+            </div>
           </div>
         </div>
-      </header>
+      );
+    };
 
-      {/* 2. Main Layout */}
-      <main className="max-w-6xl mx-auto px-4 py-8 -mt-10 relative z-20">
-        
-        {/* NEW: 실시간 정보 위젯 (날씨 & 환율) */}
-        <div className="animate-fade-in-up">
-          <QuickInfoBoard />
+    const EventCard = ({ event }) => (
+      <div className="group relative bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-100/80 flex flex-col h-full hover:-translate-y-1.5 overflow-hidden">
+        <div className="relative h-56 overflow-hidden bg-gray-100">
+          <img src={event.image} alt={event.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-sm font-bold text-gray-800 shadow-sm flex items-center gap-1.5 font-montserrat">
+            <Clock className="w-4 h-4 text-blue-600" /> {event.time}
+          </div>
         </div>
-
-        <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-          <DayNavigator days={tripData.days} currentDay={selectedDay} onSelect={setSelectedDay} />
+        <div className="px-5 py-6 flex-1 flex flex-col relative">
+          <div className="absolute -top-7 right-5 w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg border border-gray-50 z-10 group-hover:scale-110 transition-transform duration-300">
+            <IconByType type={event.type} />
+          </div>
+          <h3 className={`text-xl font-bold mb-2 tracking-tight transition-colors ${event.type === 'star' ? 'text-purple-700' : 'text-gray-800 group-hover:text-blue-700'}`}>
+            {event.title}
+          </h3>
+          <div className="flex items-center text-gray-500 text-sm mb-4 font-medium">
+            <MapPin className="w-4 h-4 mr-1 text-gray-400" />
+            {event.location}
+          </div>
+          {event.note && (
+            <div className={`mt-auto p-3.5 rounded-xl flex items-start gap-2.5 border ${event.type === 'star' ? 'bg-yellow-50/80 border-yellow-100/50' : 'bg-slate-50 border-slate-100'}`}>
+              <Info className={`w-4 h-4 flex-shrink-0 mt-0.5 ${event.type === 'star' ? 'text-yellow-600' : 'text-blue-500'}`} />
+              <p className={`text-sm leading-relaxed font-medium ${event.type === 'star' ? 'text-yellow-800' : 'text-slate-700'}`}>
+                {event.note}
+              </p>
+            </div>
+          )}
         </div>
+      </div>
+    );
 
-        <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          <div className="flex items-end gap-4 mb-8 ml-2">
-            <h2 className="text-5xl font-black text-slate-800 font-montserrat tracking-tighter drop-shadow-sm">Day {currentSchedule.day}</h2>
-            <span className="text-xl text-slate-500 font-jua border-l-2 border-slate-300 pl-4 pb-1.5 opacity-90">
-              {currentSchedule.title}
+    const EndOfDayCard = ({ day }) => (
+      <div className="group relative overflow-hidden rounded-[2rem] shadow-sm border border-slate-100 h-full min-h-[300px] flex items-center justify-center p-3">
+        <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden flex items-center justify-center">
+            <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800" alt="Relaxing Hotel Room" className="absolute inset-0 w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors duration-500" />
+            <div className="relative z-10 text-center text-white p-6 transform group-hover:-translate-y-2 transition-transform duration-500">
+            <div className="bg-white/20 backdrop-blur-md p-4 rounded-full inline-block mb-4 shadow-lg border border-white/10">
+                <BedDouble className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold mb-2 tracking-wide">Day {day} 일정 종료</h3>
+            <p className="text-sm text-gray-200 font-light opacity-90">편안한 휴식으로 에너지를 충전하세요</p>
+            </div>
+        </div>
+      </div>
+    );
+
+    const DayNavigator = ({ days, currentDay, onSelect }) => (
+      <div className="flex overflow-x-auto pb-4 gap-3 no-scrollbar snap-x">
+        {days.map((d) => (
+          <button
+            key={d.day}
+            onClick={() => onSelect(d.day)}
+            className={`snap-center flex-shrink-0 px-7 py-3.5 rounded-2xl text-sm font-medium transition-all duration-300 border ${
+              currentDay === d.day
+                ? 'bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-600/20 scale-105 font-bold'
+                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            <span className="font-montserrat text-base">Day {d.day}</span>
+            <span className={`block text-xs mt-1 font-jua opacity-90 ${currentDay === d.day ? 'text-blue-100' : 'text-gray-400'}`}>
+              {d.date}
             </span>
-          </div>
+          </button>
+        ))}
+      </div>
+    );
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {currentSchedule.events.map((event, index) => (
-              <React.Fragment key={index}>
-                <EventCard event={event} />
-              </React.Fragment>
+    const MobileMenu = ({ isOpen, onClose, days, onSelectDay }) => {
+      if (!isOpen) return null;
+      return (
+        <div className="absolute top-[80px] right-4 w-64 bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 p-2 overflow-hidden">
+          <div className="p-4 border-b border-gray-100 mb-2">
+            <h3 className="font-montserrat font-bold text-gray-800 text-lg">Quick Jump</h3>
+            <p className="text-xs text-gray-500">원하는 일정으로 바로 이동하세요</p>
+          </div>
+          <div className="flex flex-col gap-1">
+            {days.map((d) => (
+              <button
+                key={d.day}
+                onClick={() => { onSelectDay(d.day); onClose(); }}
+                className="flex items-center justify-between p-3.5 rounded-2xl hover:bg-slate-50 text-left group transition-colors"
+              >
+                <div>
+                  <span className="font-bold text-blue-900 font-montserrat block">Day {d.day}</span>
+                  <span className="text-xs text-gray-500 font-medium">{d.title}</span>
+                </div>
+                <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-transform group-hover:translate-x-1" />
+              </button>
             ))}
-            
-            <EndOfDayCard day={selectedDay} />
           </div>
         </div>
-      </main>
+      );
+    };
 
-      <footer className="bg-slate-100 border-t border-slate-200 py-16 mt-16 text-center text-slate-400 text-sm">
-        <p className="font-montserrat font-bold text-slate-500">© 2026 INCAR Financial Service. All rights reserved.</p>
-        <p className="mt-2 text-xs text-slate-400 font-jua opacity-80">Designed with First Principles.</p>
-      </footer>
-    </div>
-  );
-}
+    function App() {
+      const [selectedDay, setSelectedDay] = useState(1);
+      const [isMenuOpen, setIsMenuOpen] = useState(false);
+      const currentSchedule = tripData.days.find(d => d.day === selectedDay);
+      
+      return (
+        <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100">
+          {/* 1. Header (Vibe & Inspiration) */}
+          <header className="relative flex flex-col w-full min-h-[650px] lg:min-h-[85vh] overflow-hidden bg-gray-900">
+            <div className="absolute inset-0 z-0">
+              <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei City Morning Vibe" className="w-full h-full object-cover object-center brightness-95" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
+            </div>
+            
+            <nav className="relative z-10 w-full p-4 md:p-6 flex justify-between items-center text-white">
+              <div className="text-lg md:text-xl font-black tracking-tight bg-black/20 backdrop-blur-md px-5 py-2 rounded-full border border-white/20 font-montserrat shadow-lg">
+                INCAR TRIP
+              </div>
+              <div className="relative">
+                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className={`p-3 rounded-full transition-all duration-300 shadow-md ${isMenuOpen ? 'bg-white text-gray-900 rotate-90' : 'bg-black/20 backdrop-blur-md text-white hover:bg-white/30 border border-white/20'}`}>
+                    {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+                <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} days={tripData.days} onSelectDay={setSelectedDay} />
+              </div>
+            </nav>
+
+            <div className="relative z-10 flex-1 min-h-[40px]"></div>
+
+            {/* Hero Content */}
+            <div className="relative z-10 w-full px-6 md:px-12 pb-20 md:pb-28 max-w-6xl mx-auto flex flex-col justify-end">
+              <div className="text-4xl md:text-5xl lg:text-6xl font-montserrat font-black text-[#FFD700] mb-2 tracking-[0.15em] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] self-start">
+                2025
+              </div>
+              <div className="inline-block relative self-start">
+                  <h1 className="text-7xl sm:text-8xl md:text-[8rem] lg:text-[9.5rem] text-white font-playfair font-bold custom-logo-text drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] z-20 relative pr-4">
+                    <span className="ml-[-0.05em]">Incar</span>
+                    <span className="ml-[0.05em]">Spring Camp</span>
+                  </h1>
+                  <p className="absolute -bottom-8 right-10 md:-bottom-12 md:right-16 lg:-bottom-14 lg:right-28 text-[#FFD700] text-3xl md:text-[2.5rem] font-playfair font-bold italic drop-shadow-lg tracking-wide z-30">
+                    in Taiwan
+                  </p>
+              </div>
+              <div className="mt-20 flex flex-wrap items-center gap-3 text-white/90">
+                <div className="flex items-center gap-2 bg-blue-600/95 backdrop-blur-md px-5 py-3 rounded-2xl text-sm md:text-base font-bold shadow-xl shadow-blue-900/30 font-montserrat tracking-wide border border-blue-400/30">
+                  <CalendarDays className="w-5 h-5" />
+                  {tripData.dates}
+                </div>
+                <span className="hidden lg:inline text-white/40 mx-2 text-xl font-light">|</span>
+                <p className="text-sm md:text-base text-gray-200 font-medium font-jua w-full lg:w-auto mt-3 lg:mt-0 drop-shadow-md">
+                  {tripData.description}
+                </p>
+              </div>
+            </div>
+          </header>
+
+          {/* 2. Main Layout */}
+          <main className="max-w-6xl mx-auto px-4 py-8 -mt-10 relative z-20">
+            <div className="animate-fade-in-up">
+              <QuickInfoBoard />
+            </div>
+
+            <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+              <DayNavigator days={tripData.days} currentDay={selectedDay} onSelect={setSelectedDay} />
+            </div>
+
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <div className="flex items-end gap-4 mb-8 ml-2">
+                <h2 className="text-5xl font-black text-slate-800 font-montserrat tracking-tighter drop-shadow-sm">Day {currentSchedule.day}</h2>
+                <span className="text-xl text-slate-500 font-jua border-l-2 border-slate-300 pl-4 pb-1.5 opacity-90">
+                  {currentSchedule.title}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {currentSchedule.events.map((event, index) => (
+                  <React.Fragment key={index}>
+                    <EventCard event={event} />
+                  </React.Fragment>
+                ))}
+                <EndOfDayCard day={selectedDay} />
+              </div>
+            </div>
+          </main>
+
+          <footer className="bg-slate-100 border-t border-slate-200 py-16 mt-16 text-center text-slate-400 text-sm">
+            <p className="font-montserrat font-bold text-slate-500">© 2026 INCAR Financial Service. All rights reserved.</p>
+            <p className="mt-2 text-xs text-slate-400 font-jua opacity-80">Designed with First Principles.</p>
+          </footer>
+        </div>
+      );
+    }
+
+    // React 앱을 화면에 그리는 최종 실행 코드
+    const root = createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
