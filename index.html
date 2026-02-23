@@ -224,7 +224,8 @@
                 <div className="flex items-center gap-1.5 text-sm font-medium">
                   <Droplets className="w-3.5 h-3.5 text-blue-400" /> 습도 {currentHumid}%
                 </div>
-                <p className="text-xs opacity-70">실시간 기상청</p>
+                {/* 날씨 출처 표기 영문 -> 한글 직관적 표기로 변경 */}
+                <p className="text-[11px] opacity-60 font-jua mt-0.5 tracking-wide">정보 제공: 오픈 메테오 기상청</p>
               </div>
             </div>
           </div>
@@ -264,6 +265,8 @@
 
               <div className="hidden sm:flex flex-col items-end gap-1 text-slate-500">
                 <p className="text-xs opacity-70 mt-1">100 TWD = 약 <span className="font-bold">{Math.round(liveExchange * 100).toLocaleString()}</span>원</p>
+                {/* 환율 출처 표기 영문 -> 한글 직관적 표기로 변경 */}
+                <p className="text-[11px] opacity-60 font-jua mt-0.5 tracking-wide">기준: 실시간 시장 고시 환율</p>
               </div>
             </div>
           </div>
@@ -418,8 +421,10 @@
             </div>
             
             {!selectedDateStr && (
-              <div className="p-4 bg-slate-50 text-center border-t border-slate-100">
+              <div className="p-4 bg-slate-50 text-center border-t border-slate-100 flex flex-col gap-1 items-center">
                 <p className="text-xs text-slate-500 font-medium">대만은 비가 자주 오니 <span className="font-bold text-blue-500">작은 우산</span>을 꼭 챙겨주세요 ☔️</p>
+                {/* 모달 하단 출처 표기 한글로 변경 */}
+                <p className="text-[10px] text-slate-400 font-jua mt-1 tracking-wide">데이터 제공: 글로벌 기상 정보 (Open-Meteo)</p>
               </div>
             )}
           </div>
@@ -588,8 +593,10 @@
               </div>
             </div>
             
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-center items-center">
-              <p className="text-[11px] text-slate-400 font-medium font-jua">양쪽 칸 모두 자유롭게 숫자를 입력할 수 있습니다.</p>
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex flex-col justify-center items-center gap-1">
+              <p className="text-[11px] text-slate-500 font-medium font-jua">양쪽 칸 모두 자유롭게 숫자를 입력할 수 있습니다.</p>
+              {/* 모달 하단 출처 표기 한글로 변경 */}
+              <p className="text-[10px] text-slate-400 font-jua mt-1 tracking-wide">데이터 제공: 실시간 글로벌 외환 API</p>
             </div>
           </div>
         </div>
