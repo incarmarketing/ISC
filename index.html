@@ -53,14 +53,14 @@
   </style>
 </head>
 <body>
-  <!-- 리액트 앱이 렌더링될 빈 도화지 -->
   <div id="root"></div>
 
   <!-- 5. 리액트 앱 실제 구동 코드 -->
   <script type="text/babel" data-type="module">
     import React, { useState, useEffect } from 'react';
     import { createRoot } from 'react-dom/client';
-    import { Clock, MapPin, Camera, Coffee, Utensils, Info, Menu, X, Plane, Ticket, Star, BedDouble, CalendarDays, ArrowRight, CloudSun, Droplets, Coins, TrendingUp, RefreshCcw } from 'lucide-react';
+    // Edit3, Check 아이콘을 제거하고 ChevronUp, ChevronDown 아이콘을 추가합니다.
+    import { Clock, MapPin, Camera, Coffee, Utensils, Info, Menu, X, Plane, Ticket, Star, BedDouble, CalendarDays, ArrowRight, CloudSun, Droplets, Coins, TrendingUp, RefreshCcw, Sun, Cloud, CloudRain, ChevronRight, Calculator, ArrowDownUp, ChevronUp, ChevronDown } from 'lucide-react';
 
     // --- DATA: 여행 데이터 (ISC Taiwan 2025) ---
     const tripData = {
@@ -123,6 +123,29 @@
       ]
     };
 
+    // --- 기상청 날씨 코드 번역기 ---
+    const parseWeatherCode = (code) => {
+      if (code === 0) return { desc: '맑음', type: 'sunny' };
+      if ([1, 2].includes(code)) return { desc: '구름 조금', type: 'partly' };
+      if (code === 3) return { desc: '흐림', type: 'cloudy' };
+      if ([45, 48].includes(code)) return { desc: '안개', type: 'cloudy' };
+      if ([51, 53, 55, 56, 57].includes(code)) return { desc: '이슬비', type: 'rainy' };
+      if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return { desc: '비', type: 'rainy' };
+      if ([71, 73, 75, 77, 85, 86].includes(code)) return { desc: '눈', type: 'cloudy' };
+      if ([95, 96, 99].includes(code)) return { desc: '뇌우', type: 'rainy' };
+      return { desc: '알수없음', type: 'sunny' };
+    };
+
+    const getWeatherIcon = (type, className="w-5 h-5") => {
+      switch(type) {
+        case 'sunny': return <Sun className={`${className} text-orange-500`} />;
+        case 'cloudy': return <Cloud className={`${className} text-gray-400`} />;
+        case 'rainy': return <CloudRain className={`${className} text-blue-500`} />;
+        case 'partly': return <CloudSun className={`${className} text-yellow-500`} />;
+        default: return <Sun className={`${className} text-orange-500`} />;
+      }
+    };
+
     // --- COMPONENTS ---
     const IconByType = ({ type }) => {
       switch (type) {
@@ -137,71 +160,362 @@
     };
 
     // 실시간 정보 위젯 (날씨 & 환율)
-    const QuickInfoBoard = () => {
+    const QuickInfoBoard = ({ onOpenWeather, onOpenExchange, liveWeather, liveExchange }) => {
       const [isRefreshing, setIsRefreshing] = useState(false);
 
-      const handleRefresh = () => {
+      const handleRefresh = (e) => {
+        e.stopPropagation();
         setIsRefreshing(true);
         setTimeout(() => setIsRefreshing(false), 1000);
       };
 
+      const currentTemp = liveWeather ? Math.round(liveWeather.current.temperature_2m) : 22;
+      const currentHumid = liveWeather ? liveWeather.current.relative_humidity_2m : 65;
+      const weatherInfo = liveWeather ? parseWeatherCode(liveWeather.current.weather_code) : { desc: '조회중...', type: 'partly' };
+
       return (
-        <div className="w-full flex flex-col md:flex-row gap-4 mb-10 mt-2">
+        /* 상단 배너와의 여백(mt-8 lg:mt-10)과 박스 사이의 여백(gap-5)을 더 넓고 시원하게 조정했습니다. */
+        <div className="w-full flex flex-col md:flex-row gap-5 mb-12 mt-8 lg:mt-10">
           {/* 타이베이 날씨 카드 */}
-          <div className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex items-center justify-between group hover:shadow-md transition-all relative overflow-hidden">
+          <div 
+            onClick={onOpenWeather}
+            className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between group hover:shadow-md transition-all relative overflow-hidden cursor-pointer hover:-translate-y-1 ring-2 ring-transparent hover:ring-blue-100"
+          >
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-inner">
-                <CloudSun className="w-7 h-7" />
+            
+            <div className="flex justify-between items-start w-full relative z-10 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Taipei Weather</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Taipei Weather</span>
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-slate-800 font-montserrat tracking-tighter">22°C</span>
-                  <span className="text-sm text-slate-500 font-medium font-jua">맑고 화창함</span>
-                </div>
+              <div className="flex items-center gap-0.5 bg-blue-50 text-blue-600 px-2 py-1 rounded-md text-[11px] font-bold font-jua shadow-sm animate-pulse whitespace-nowrap">
+                주간 보기 <ChevronRight className="w-3 h-3" />
               </div>
             </div>
-            <div className="hidden sm:flex flex-col items-end gap-1 relative z-10 text-slate-500">
-              <div className="flex items-center gap-1.5 text-sm font-medium">
-                <Droplets className="w-3.5 h-3.5 text-blue-400" /> 습도 65%
+
+            <div className="flex justify-between items-end relative z-10 w-full">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center shadow-inner">
+                  {getWeatherIcon(weatherInfo.type, "w-7 h-7")}
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-black text-slate-800 font-montserrat tracking-tighter">{currentTemp}°C</span>
+                  <span className="text-sm text-slate-500 font-medium font-jua">{weatherInfo.desc}</span>
+                </div>
               </div>
-              <p className="text-xs opacity-70">어제보다 2° 높음</p>
+
+              <div className="hidden sm:flex flex-col items-end gap-1 text-slate-500">
+                <div className="flex items-center gap-1.5 text-sm font-medium">
+                  <Droplets className="w-3.5 h-3.5 text-blue-400" /> 습도 {currentHumid}%
+                </div>
+                <p className="text-xs opacity-70">실시간 기상청</p>
+              </div>
             </div>
           </div>
 
           {/* 대만 환율 카드 */}
-          <div className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex items-center justify-between group hover:shadow-md transition-all relative overflow-hidden">
+          <div 
+            onClick={onOpenExchange}
+            className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between group hover:shadow-md transition-all relative overflow-hidden cursor-pointer hover:-translate-y-1 ring-2 ring-transparent hover:ring-yellow-100"
+          >
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-yellow-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-14 h-14 bg-gradient-to-br from-yellow-100 to-orange-50 rounded-2xl flex items-center justify-center text-yellow-600 shadow-inner">
-                <Coins className="w-7 h-7" />
+            
+            <div className="flex justify-between items-start w-full relative z-10 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Exchange Rate</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Exchange Rate</span>
-                  <button onClick={handleRefresh} className="text-slate-300 hover:text-blue-500 transition-colors" title="환율 업데이트">
-                    <RefreshCcw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-500' : ''}`} />
-                  </button>
+              
+              <div className="flex items-center gap-0.5 bg-yellow-50 text-yellow-600 px-2 py-1 rounded-md text-[11px] font-bold font-jua shadow-sm animate-pulse whitespace-nowrap">
+                계산기 열기 <ChevronRight className="w-3 h-3" />
+              </div>
+            </div>
+
+            <div className="flex justify-between items-end relative z-10 w-full">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-yellow-100 to-orange-50 rounded-2xl flex items-center justify-center text-yellow-600 shadow-inner">
+                  <Coins className="w-7 h-7" />
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-slate-800 font-montserrat tracking-tighter">42.50</span>
-                  <span className="text-sm font-bold text-slate-500 font-montserrat">KRW</span>
-                  <span className="text-xs text-slate-400 font-jua border-l border-slate-200 pl-2 ml-1">1 TWD 기준</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-black text-slate-800 font-montserrat tracking-tighter">{liveExchange}</span>
+                  <span className="text-sm font-bold text-slate-500 font-montserrat ml-1">KRW</span>
+                  <span className="text-xs text-slate-400 font-jua border-l border-slate-200 pl-2 ml-1">1 TWD</span>
+                </div>
+              </div>
+
+              {/* 배지를 제거하고 텍스트를 깔끔하게 다듬었습니다 */}
+              <div className="hidden sm:flex flex-col items-end gap-1 text-slate-500">
+                <p className="text-xs opacity-70 mt-1">100 TWD = 약 <span className="font-bold">{Math.round(liveExchange * 100).toLocaleString()}</span>원</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // 주간 날씨 모달
+    const WeatherModal = ({ isOpen, onClose, liveWeather }) => {
+      if (!isOpen) return null;
+
+      const getDayName = (dateStr) => {
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        return days[new Date(dateStr).getDay()];
+      };
+
+      let weeklyData = [];
+      if (liveWeather && liveWeather.daily) {
+        weeklyData = liveWeather.daily.time.map((dateStr, i) => {
+          const wmoCode = liveWeather.daily.weather_code[i];
+          const { desc, type } = parseWeatherCode(wmoCode);
+          const isToday = i === 0;
+          const tripDates = ["2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14"];
+          const isTripDay = tripDates.includes(dateStr);
+
+          return {
+            date: dateStr.slice(5).replace('-', '.'),
+            day: isToday ? '오늘' : getDayName(dateStr),
+            type,
+            high: Math.round(liveWeather.daily.temperature_2m_max[i]),
+            low: Math.round(liveWeather.daily.temperature_2m_min[i]),
+            desc,
+            isTripDay,
+            isToday
+          };
+        });
+      }
+
+      return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="bg-white rounded-3xl w-full max-w-md relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-blue-50/50 p-5 border-b border-slate-100 flex justify-between items-center">
+              <div>
+                <h3 className="font-montserrat font-black text-xl text-slate-800 tracking-tight flex items-center gap-2">
+                  Taipei Live Forecast <span className="animate-pulse h-2 w-2 bg-emerald-500 rounded-full"></span>
+                </h3>
+                <p className="text-sm font-jua text-slate-500">실시간 향후 7일 날씨 예보</p>
+              </div>
+              <button onClick={onClose} className="p-2 bg-white rounded-full text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors shadow-sm border border-slate-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-3 max-h-[60vh] overflow-y-auto">
+              {weeklyData.length > 0 ? weeklyData.map((day, idx) => (
+                <div key={idx} className={`flex items-center justify-between p-3 my-1 rounded-2xl transition-colors ${day.isToday ? 'bg-blue-50/60 border border-blue-100' : 'hover:bg-slate-50 border border-transparent'}`}>
+                  <div className="flex items-center gap-3 w-[40%] relative">
+                    <span className={`font-montserrat font-bold text-base ${day.isToday ? 'text-blue-900' : 'text-slate-600'}`}>{day.date}</span>
+                    <span className={`font-jua text-sm ${day.isToday ? 'text-blue-700' : 'text-slate-400'}`}>{day.day}</span>
+                    {day.isToday && (
+                      <span className="text-[10px] font-bold text-white bg-blue-500 px-1.5 py-0.5 rounded shadow-sm tracking-wide">TODAY</span>
+                    )}
+                    {day.isTripDay && !day.isToday && (
+                      <span className="text-[10px] font-bold text-white bg-orange-500 px-1.5 py-0.5 rounded shadow-sm tracking-wide">일정</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-center gap-2 w-[30%]">
+                    {getWeatherIcon(day.type)}
+                    <span className="text-xs font-medium text-slate-600 w-12 text-center">{day.desc}</span>
+                  </div>
+                  <div className="flex items-center justify-end gap-2 w-[30%] font-montserrat text-sm">
+                    <span className="text-blue-400 font-medium">{day.low}°</span>
+                    <span className="w-3 h-px bg-slate-300"></span>
+                    <span className="text-orange-500 font-bold">{day.high}°</span>
+                  </div>
+                </div>
+              )) : (
+                <div className="p-10 text-center text-slate-400 text-sm font-medium">데이터를 불러오는 중입니다...</div>
+              )}
+            </div>
+            <div className="p-4 bg-slate-50 text-center border-t border-slate-100">
+              <p className="text-xs text-slate-500 font-medium">대만은 비가 자주 오니 <span className="font-bold text-blue-500">작은 우산</span>을 꼭 챙겨주세요 ☔️</p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // --- NEW: 자유계산 & 환율 수정 기능을 갖춘 완벽한 계산기 ---
+    const ExchangeModal = ({ isOpen, onClose, liveExchange }) => {
+      const [twdVal, setTwdVal] = useState("100");
+      const [krwVal, setKrwVal] = useState("");
+      
+      const [customRate, setCustomRate] = useState("");
+
+      // 모달이 열릴 때 실시간 환율 정보 초기 세팅
+      useEffect(() => {
+        if (isOpen) {
+          const defaultRate = liveExchange || "42.50";
+          if (!customRate) {
+            setCustomRate(defaultRate);
+            setKrwVal(Math.round(100 * parseFloat(defaultRate)).toString());
+          }
+        }
+      }, [isOpen, liveExchange]);
+
+      if (!isOpen) return null;
+
+      const rateToUse = parseFloat(customRate) || 42.50;
+
+      // 콤마 제거/추가 헬퍼 함수
+      const parseNum = (str) => str.toString().replace(/,/g, '');
+      const formatNum = (str) => {
+        if (!str) return "";
+        const parts = str.toString().split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join('.');
+      };
+
+      // TWD 입력 핸들러 (TWD -> KRW 자동계산)
+      const handleTwdChange = (e) => {
+        const rawVal = parseNum(e.target.value);
+        if (isNaN(rawVal)) return;
+        setTwdVal(rawVal);
+        if (rawVal === '') setKrwVal('');
+        else setKrwVal(Math.round(Number(rawVal) * rateToUse).toString());
+      };
+
+      // KRW 입력 핸들러 (KRW -> TWD 자동계산)
+      const handleKrwChange = (e) => {
+        const rawVal = parseNum(e.target.value);
+        if (isNaN(rawVal)) return;
+        setKrwVal(rawVal);
+        if (rawVal === '') setTwdVal('');
+        else setTwdVal((Number(rawVal) / rateToUse).toFixed(2).replace(/\.00$/, '')); // 소수점 .00 제거
+      };
+
+      // 환율 직접 인풋 수정
+      const handleRateInput = (e) => {
+        const val = e.target.value;
+        setCustomRate(val);
+        const rate = parseFloat(val) || 0;
+        if (rate > 0 && twdVal) {
+           setKrwVal(Math.round(Number(parseNum(twdVal)) * rate).toString());
+        }
+      };
+
+      // 화살표 미세 조정 (0.1 단위)
+      const adjustRate = (delta) => {
+        const current = parseFloat(customRate) || 0;
+        const next = Math.max(0, current + delta).toFixed(2);
+        setCustomRate(next);
+        if (twdVal) {
+          setKrwVal(Math.round(Number(parseNum(twdVal)) * parseFloat(next)).toString());
+        }
+      };
+
+      // 빠른 버튼 누적 덧셈 기능
+      const handlePreset = (amount) => {
+        const currentTwd = Number(parseNum(twdVal)) || 0;
+        const newTwd = currentTwd + amount;
+        setTwdVal(newTwd.toString());
+        setKrwVal(Math.round(newTwd * rateToUse).toString());
+      };
+
+      return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="bg-white rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-yellow-50/50 p-5 border-b border-yellow-100/50 flex justify-between items-center">
+              <div>
+                <h3 className="font-montserrat font-black text-xl text-slate-800 tracking-tight flex items-center gap-2">
+                  Currency Calc <Calculator className="w-5 h-5 text-yellow-600" />
+                </h3>
+                <p className="text-sm font-jua text-slate-500">자유 양방향 환율 계산기</p>
+              </div>
+              <button onClick={onClose} className="p-2 bg-white rounded-full text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors shadow-sm border border-slate-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 pb-4">
+              {/* 직관적인 환율 미세 조정 패널 (화살표 & 직접 입력 방식) */}
+              <div className="bg-emerald-50/50 rounded-2xl p-3 mb-5 border border-emerald-100 flex items-center justify-between">
+                <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest pl-1">적용 환율</span>
+                <div className="flex items-center gap-2 text-sm font-bold text-slate-600 font-montserrat">
+                  <span>1 TWD =</span>
+                  <div className="flex items-center bg-white border border-emerald-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-400 shadow-sm transition-all">
+                    <input 
+                      type="number" 
+                      step="0.1"
+                      value={customRate} 
+                      onChange={handleRateInput}
+                      className="w-16 py-1.5 pl-2 text-right font-black text-emerald-600 outline-none bg-transparent"
+                    />
+                    <div className="flex flex-col border-l border-emerald-100">
+                      <button onClick={() => adjustRate(0.1)} className="px-1.5 py-0.5 hover:bg-emerald-100 text-emerald-600 active:bg-emerald-200 transition-colors"><ChevronUp className="w-3 h-3" /></button>
+                      <div className="w-full h-px bg-emerald-100"></div>
+                      <button onClick={() => adjustRate(-0.1)} className="px-1.5 py-0.5 hover:bg-emerald-100 text-emerald-600 active:bg-emerald-200 transition-colors"><ChevronDown className="w-3 h-3" /></button>
+                    </div>
+                  </div>
+                  <span className="text-xs">KRW</span>
+                </div>
+              </div>
+
+              {/* 입력 영역 (대만 달러 - TWD) */}
+              <div className="bg-slate-50 rounded-2xl p-4 mb-3 border border-slate-200 relative shadow-inner focus-within:ring-2 focus-within:ring-blue-200 transition-all">
+                <label className="text-xs font-bold text-slate-400 font-montserrat uppercase tracking-widest block mb-2">대만 달러 (TWD)</label>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-black text-slate-300">$</span>
+                  <input 
+                    type="text" 
+                    inputMode="decimal"
+                    value={formatNum(twdVal)}
+                    onChange={handleTwdChange}
+                    className="w-full bg-transparent text-right text-4xl font-black font-montserrat text-blue-600 focus:outline-none"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              {/* 빠른 추가 입력 버튼 (누적됨) */}
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                {[50, 100, 500, 1000].map((amount) => (
+                  <button 
+                    key={amount}
+                    onClick={() => handlePreset(amount)}
+                    className="bg-white border border-slate-200 py-2.5 rounded-xl text-sm font-black font-montserrat text-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all shadow-sm active:scale-95 active:bg-blue-100"
+                  >
+                    +{amount}
+                  </button>
+                ))}
+              </div>
+
+              {/* 방향 아이콘 */}
+              <div className="flex justify-center -my-3 relative z-10 pointer-events-none">
+                <div className="bg-white p-1.5 rounded-full border border-slate-200 shadow-sm text-slate-300">
+                  <ArrowDownUp className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* 결과 및 역방향 입력 영역 (한국 원 - KRW) */}
+              <div className="bg-slate-800 rounded-2xl p-4 mt-1 border border-slate-700 relative overflow-hidden shadow-lg focus-within:ring-2 focus-within:ring-yellow-500/50 transition-all">
+                <div className="absolute -right-4 -bottom-4 opacity-10 text-white pointer-events-none">
+                  <Coins className="w-24 h-24" />
+                </div>
+                <label className="text-xs font-bold text-slate-400 font-montserrat uppercase tracking-widest block mb-2 relative z-10">한국 원 (KRW)</label>
+                <div className="flex items-center justify-between relative z-10">
+                  <span className="text-2xl font-black text-slate-500">₩</span>
+                  <input 
+                    type="text"
+                    inputMode="numeric"
+                    value={formatNum(krwVal)}
+                    onChange={handleKrwChange}
+                    className="w-full bg-transparent text-right text-4xl font-black font-montserrat text-yellow-400 focus:outline-none"
+                    placeholder="0"
+                  />
                 </div>
               </div>
             </div>
-            <div className="hidden sm:flex flex-col items-end gap-1 relative z-10 text-emerald-500">
-              <div className="flex items-center gap-1 text-sm font-bold font-montserrat bg-emerald-50 px-2 py-0.5 rounded-md">
-                <TrendingUp className="w-3.5 h-3.5" /> +0.12
-              </div>
-              <p className="text-xs text-slate-400 opacity-70">실시간 송금환율</p>
+            
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-center items-center">
+              <p className="text-[11px] text-slate-400 font-medium font-jua">양쪽 칸 모두 자유롭게 숫자를 입력할 수 있습니다.</p>
             </div>
           </div>
         </div>
@@ -307,8 +621,30 @@
     function App() {
       const [selectedDay, setSelectedDay] = useState(1);
       const [isMenuOpen, setIsMenuOpen] = useState(false);
-      const currentSchedule = tripData.days.find(d => d.day === selectedDay);
+      const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
+      const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
       
+      const [liveWeather, setLiveWeather] = useState(null);
+      const [liveExchange, setLiveExchange] = useState("42.50"); 
+
+      useEffect(() => {
+        fetch('https://api.open-meteo.com/v1/forecast?latitude=25.0478&longitude=121.5319&current=temperature_2m,relative_humidity_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTaipei')
+          .then(res => res.json())
+          .then(data => setLiveWeather(data))
+          .catch(err => console.error("Weather API error", err));
+
+        fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/twd.json')
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.twd && data.twd.krw) {
+              setLiveExchange(data.twd.krw.toFixed(2));
+            }
+          })
+          .catch(err => console.error("Exchange API error", err));
+      }, []);
+
+      const currentSchedule = tripData.days.find(d => d.day === selectedDay);
+
       return (
         <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100">
           {/* 1. Header (Vibe & Inspiration) */}
@@ -339,30 +675,36 @@
               </div>
               <div className="inline-block relative self-start">
                   <h1 className="text-7xl sm:text-8xl md:text-[8rem] lg:text-[9.5rem] text-white font-playfair font-bold custom-logo-text drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] z-20 relative pr-4">
-                    <span className="ml-[-0.05em]">Incar</span>
-                    <span className="ml-[0.05em]">Spring Camp</span>
-                  </h1>
-                  <p className="absolute -bottom-8 right-10 md:-bottom-12 md:right-16 lg:-bottom-14 lg:right-28 text-[#FFD700] text-3xl md:text-[2.5rem] font-playfair font-bold italic drop-shadow-lg tracking-wide z-30">
-                    in Taiwan
-                  </p>
-              </div>
-              <div className="mt-20 flex flex-wrap items-center gap-3 text-white/90">
-                <div className="flex items-center gap-2 bg-blue-600/95 backdrop-blur-md px-5 py-3 rounded-2xl text-sm md:text-base font-bold shadow-xl shadow-blue-900/30 font-montserrat tracking-wide border border-blue-400/30">
-                  <CalendarDays className="w-5 h-5" />
-                  {tripData.dates}
-                </div>
-                <span className="hidden lg:inline text-white/40 mx-2 text-xl font-light">|</span>
-                <p className="text-sm md:text-base text-gray-200 font-medium font-jua w-full lg:w-auto mt-3 lg:mt-0 drop-shadow-md">
-                  {tripData.description}
-                </p>
-              </div>
+                <span className="ml-[-0.05em]">Incar</span>
+                <span className="ml-[0.05em]">Spring Camp</span>
+              </h1>
+              <p className="absolute -bottom-8 right-10 md:-bottom-12 md:right-16 lg:-bottom-14 lg:right-28 text-[#FFD700] text-3xl md:text-[2.5rem] font-playfair font-bold italic drop-shadow-lg tracking-wide z-30">
+                in Taiwan
+              </p>
+          </div>
+          <div className="mt-20 flex flex-wrap items-center gap-3 text-white/90">
+            <div className="flex items-center gap-2 bg-blue-600/95 backdrop-blur-md px-5 py-3 rounded-2xl text-sm md:text-base font-bold shadow-xl shadow-blue-900/30 font-montserrat tracking-wide border border-blue-400/30">
+              <CalendarDays className="w-5 h-5" />
+              {tripData.dates}
             </div>
-          </header>
+            <span className="hidden lg:inline text-white/40 mx-2 text-xl font-light">|</span>
+            <p className="text-sm md:text-base text-gray-200 font-medium font-jua w-full lg:w-auto mt-3 lg:mt-0 drop-shadow-md">
+              {tripData.description}
+            </p>
+          </div>
+        </div>
+      </header>
 
-          {/* 2. Main Layout */}
-          <main className="max-w-6xl mx-auto px-4 py-8 -mt-10 relative z-20">
-            <div className="animate-fade-in-up">
-              <QuickInfoBoard />
+      {/* 2. Main Layout */}
+      {/* 본문 영역이 배너를 너무 많이 침범하지 않도록 끌어올리는 마진(-mt-10)을 살짝 줄였습니다 (-mt-4 md:-mt-6). */}
+      <main className="max-w-6xl mx-auto px-4 py-8 -mt-4 md:-mt-6 relative z-20">
+        <div className="animate-fade-in-up">
+          <QuickInfoBoard 
+            onOpenWeather={() => setIsWeatherModalOpen(true)} 
+                onOpenExchange={() => setIsExchangeModalOpen(true)}
+                liveWeather={liveWeather} 
+                liveExchange={liveExchange} 
+              />
             </div>
 
             <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
@@ -392,11 +734,22 @@
             <p className="font-montserrat font-bold text-slate-500">© 2026 INCAR Financial Service. All rights reserved.</p>
             <p className="mt-2 text-xs text-slate-400 font-jua opacity-80">Designed with First Principles.</p>
           </footer>
+
+          {/* Modals */}
+          <WeatherModal 
+            isOpen={isWeatherModalOpen} 
+            onClose={() => setIsWeatherModalOpen(false)} 
+            liveWeather={liveWeather} 
+          />
+          <ExchangeModal 
+            isOpen={isExchangeModalOpen} 
+            onClose={() => setIsExchangeModalOpen(false)} 
+            liveExchange={liveExchange} 
+          />
         </div>
       );
     }
 
-    // React 앱을 화면에 그리는 최종 실행 코드
     const root = createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
