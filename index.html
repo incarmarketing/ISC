@@ -171,7 +171,7 @@
       }
     };
 
-    // 실시간 정보 위젯 (날씨 & 환율)
+    // --- 실시간 날씨 및 환율 보드 ---
     const QuickInfoBoard = ({ onOpenWeather, onOpenExchange, liveWeather, liveExchange }) => {
       const currentTemp = liveWeather ? Math.round(liveWeather.current.temperature_2m) : 22;
       const currentHumid = liveWeather ? liveWeather.current.relative_humidity_2m : 65;
@@ -179,7 +179,6 @@
 
       return (
         <div className="w-full flex flex-col md:flex-row gap-5 mb-4 mt-8 lg:mt-10">
-          {/* 타이베이 날씨 카드 */}
           <div 
             onClick={onOpenWeather}
             className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between group hover:shadow-md transition-all relative overflow-hidden cursor-pointer hover:-translate-y-1 ring-2 ring-transparent hover:ring-blue-100"
@@ -219,7 +218,6 @@
             </div>
           </div>
 
-          {/* 대만 환율 카드 */}
           <div 
             onClick={onOpenExchange}
             className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between group hover:shadow-md transition-all relative overflow-hidden cursor-pointer hover:-translate-y-1 ring-2 ring-transparent hover:ring-yellow-100"
@@ -262,60 +260,84 @@
       );
     };
 
-    // --- NEW: 여행 필수 정보 퀵 툴바 (시계, 준비물, 회화, 노선도, 비상연락) ---
-    const TravelToolsBar = ({ onOpenPhrases, onOpenMap, onOpenEmergency, onOpenTips }) => {
+    // --- NEW: 접었다 펴는 여행 필수 정보 아코디언 ---
+    const TravelToolsAccordion = ({ onOpenTips, onOpenPhrases, onOpenMap, onOpenEmergency }) => {
+      const [isExpanded, setIsExpanded] = useState(false);
       const [time, setTime] = useState(new Date());
 
       useEffect(() => {
+        if (!isExpanded) return;
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
-      }, []);
+      }, [isExpanded]);
 
-      // 시차 계산 (타이베이는 한국보다 1시간 느림)
       const taipeiTime = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Taipei', hour: '2-digit', minute:'2-digit', hour12: false }).format(time);
       const seoulTime = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', hour: '2-digit', minute:'2-digit', hour12: false }).format(time);
 
       return (
-        <div className="w-full flex overflow-x-auto gap-3 pb-4 mb-6 no-scrollbar snap-x px-1">
-          {/* 1. 실시간 시계 */}
-          <div className="snap-start flex-shrink-0 flex items-center gap-2.5 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/80">
-            <Clock className="w-4 h-4 text-blue-500" />
-            <div className="flex items-baseline gap-2">
-              <span className="text-sm font-black text-slate-700 font-montserrat tracking-wide">{taipeiTime}</span>
-              <span className="text-[10px] text-slate-400 font-jua border-l border-slate-200 pl-2">한국 {seoulTime}</span>
+        <div className="w-full mb-8 relative z-20">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`w-full flex items-center justify-between p-4 md:p-5 rounded-3xl transition-all duration-300 shadow-sm border ${
+              isExpanded ? 'bg-[#1C1514] text-white border-[#1C1514]' : 'bg-white hover:bg-slate-50 border-slate-200'
+            }`}
+          >
+            <div className="flex items-center gap-3.5">
+              <div className={`p-2 rounded-xl transition-colors ${isExpanded ? 'bg-white/10 text-[#FFD700]' : 'bg-slate-100 text-slate-600'}`}>
+                <Plug className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <span className={`block font-montserrat font-black text-lg ${isExpanded ? 'text-white' : 'text-slate-800'}`}>Travel Tools</span>
+                <span className={`block text-[11px] font-jua mt-0.5 ${isExpanded ? 'text-slate-300' : 'text-slate-500'}`}>여행 필수 정보 (시계, 회화, 지도, 비상연락)</span>
+              </div>
+            </div>
+            <div className={`p-2.5 rounded-full transition-colors ${isExpanded ? 'bg-white/10 text-[#FFD700]' : 'bg-slate-100 text-slate-400'}`}>
+              <ChevronDownIcon className={`w-5 h-5 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`} />
+            </div>
+          </button>
+
+          <div className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}>
+            <div className="accordion-content-inner">
+              <div className="pt-3 pb-1">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {/* 실시간 시계 */}
+                  <div className="col-span-2 md:col-span-4 flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-2 text-blue-600">
+                      <Clock className="w-5 h-5" />
+                      <span className="font-bold font-jua text-slate-700">현재 시간</span>
+                    </div>
+                    <div className="flex items-baseline gap-3">
+                      <span className="font-montserrat font-black text-xl text-slate-800">대만 {taipeiTime}</span>
+                      <span className="font-jua text-sm text-slate-400 border-l border-slate-200 pl-3">한국 {seoulTime}</span>
+                    </div>
+                  </div>
+
+                  {/* 도구 버튼 4종 */}
+                  <button onClick={onOpenTips} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-yellow-50 hover:border-yellow-300 transition-colors group active:scale-95">
+                    <Plug className="w-7 h-7 text-yellow-500 group-hover:scale-110 transition-transform" />
+                    <span className="font-bold text-sm font-jua text-slate-700">여행 팁</span>
+                  </button>
+                  <button onClick={onOpenPhrases} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-green-50 hover:border-green-300 transition-colors group active:scale-95">
+                    <MessageCircle className="w-7 h-7 text-green-500 group-hover:scale-110 transition-transform" />
+                    <span className="font-bold text-sm font-jua text-slate-700">여행 회화</span>
+                  </button>
+                  <button onClick={onOpenMap} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-blue-50 hover:border-blue-300 transition-colors group active:scale-95">
+                    <Map className="w-7 h-7 text-blue-500 group-hover:scale-110 transition-transform" />
+                    <span className="font-bold text-sm font-jua text-slate-700">지도 검색</span>
+                  </button>
+                  <button onClick={onOpenEmergency} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-red-50 hover:border-red-300 transition-colors group active:scale-95">
+                    <Phone className="w-7 h-7 text-red-500 group-hover:scale-110 transition-transform" />
+                    <span className="font-bold text-sm font-jua text-slate-700">긴급 연락</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* 2. 전압/준비물 팁 */}
-          <button onClick={onOpenTips} className="snap-start flex-shrink-0 flex items-center gap-2 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/80 hover:bg-yellow-50 hover:border-yellow-200 transition-colors group">
-            <Plug className="w-4 h-4 text-yellow-500 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-bold text-slate-600 font-jua">대만 여행 팁</span>
-          </button>
-
-          {/* 3. 생존 회화 */}
-          <button onClick={onOpenPhrases} className="snap-start flex-shrink-0 flex items-center gap-2 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/80 hover:bg-green-50 hover:border-green-200 transition-colors group">
-            <MessageCircle className="w-4 h-4 text-green-500 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-bold text-slate-600 font-jua">생존 회화</span>
-          </button>
-
-          {/* 4. 타이베이 지도 */}
-          <button onClick={onOpenMap} className="snap-start flex-shrink-0 flex items-center gap-2 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/80 hover:bg-blue-50 hover:border-blue-200 transition-colors group">
-            <Map className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-bold text-slate-600 font-jua">타이베이 지도</span>
-          </button>
-
-          {/* 5. 비상 연락망 */}
-          <button onClick={onOpenEmergency} className="snap-start flex-shrink-0 flex items-center gap-2 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/80 hover:bg-red-50 hover:border-red-200 transition-colors group">
-            <Phone className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-bold text-slate-600 font-jua">긴급 연락망</span>
-          </button>
         </div>
       );
     };
 
     // --- MODALS ---
-    
-    // 1. 대만 여행 팁 모달
     const TipsModal = ({ isOpen, onClose }) => {
       if (!isOpen) return null;
       return (
@@ -351,7 +373,6 @@
       );
     };
 
-    // 2. 여행 회화 모달 (카테고리별 아코디언 추가)
     const PhrasesModal = ({ isOpen, onClose }) => {
       const [copiedIdx, setCopiedIdx] = useState(null);
       const [expandedCat, setExpandedCat] = useState(null); 
@@ -490,7 +511,6 @@
       );
     };
 
-    // 3. 지도 모달 (구글맵 연동)
     const MapModal = ({ isOpen, onClose }) => {
       if (!isOpen) return null;
       return (
@@ -533,7 +553,6 @@
       );
     };
 
-    // 4. 긴급 연락망 모달
     const EmergencyModal = ({ isOpen, onClose }) => {
       if (!isOpen) return null;
       
@@ -580,7 +599,6 @@
       );
     };
 
-    // --- 기존 모달들 (Weather, Exchange) ---
     const WeatherModal = ({ isOpen, onClose, liveWeather }) => {
       const [selectedDateStr, setSelectedDateStr] = useState(null);
 
@@ -954,36 +972,8 @@
       </div>
     );
 
-    const MobileMenu = ({ isOpen, onClose, days, onSelectDay }) => {
-      if (!isOpen) return null;
-      return (
-        <div className="absolute top-[80px] right-4 w-64 bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 p-2 overflow-hidden">
-          <div className="p-4 border-b border-gray-100 mb-2">
-            <h3 className="font-montserrat font-bold text-gray-800 text-lg">Quick Jump</h3>
-            <p className="text-xs text-gray-500">원하는 일정으로 바로 이동하세요</p>
-          </div>
-          <div className="flex flex-col gap-1">
-            {days.map((d) => (
-              <button
-                key={d.day}
-                onClick={() => { onSelectDay(d.day); onClose(); }}
-                className="flex items-center justify-between p-3.5 rounded-2xl hover:bg-slate-50 text-left group transition-colors"
-              >
-                <div>
-                  <span className="font-bold text-blue-900 font-montserrat block">Day {d.day}</span>
-                  <span className="text-xs text-gray-500 font-medium">{d.title}</span>
-                </div>
-                <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-transform group-hover:translate-x-1" />
-              </button>
-            ))}
-          </div>
-        </div>
-      );
-    };
-
     function App() {
       const [selectedDay, setSelectedDay] = useState(null);
-      const [isMenuOpen, setIsMenuOpen] = useState(false);
       
       const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
       const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
@@ -1022,12 +1012,6 @@
             <nav className="relative z-10 w-full p-4 md:p-6 flex justify-between items-center text-white">
               <div className="text-lg md:text-xl font-black tracking-tight bg-black/20 backdrop-blur-md px-5 py-2 rounded-full border border-white/20 font-montserrat shadow-lg">
                 INCAR TRIP
-              </div>
-              <div className="relative">
-                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className={`p-3 rounded-full transition-all duration-300 shadow-md ${isMenuOpen ? 'bg-white text-gray-900 rotate-90' : 'bg-black/20 backdrop-blur-md text-white hover:bg-white/30 border border-white/20'}`}>
-                    {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
-                <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} days={tripData.days} onSelectDay={setSelectedDay} />
               </div>
             </nav>
 
@@ -1069,8 +1053,9 @@
               />
             </div>
 
+            {/* Travel Tools 아코디언 추가 */}
             <div className="animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
-              <TravelToolsBar 
+              <TravelToolsAccordion 
                 onOpenTips={() => setIsTipsModalOpen(true)}
                 onOpenPhrases={() => setIsPhrasesModalOpen(true)}
                 onOpenMap={() => setIsMapModalOpen(true)}
