@@ -71,7 +71,7 @@
   <script type="text/babel" data-type="module">
     import React, { useState, useEffect } from 'react';
     import { createRoot } from 'react-dom/client';
-    import { Clock, MapPin, Camera, Coffee, Utensils, Info, Menu, X, Plane, Ticket, Star, BedDouble, CalendarDays, ArrowRight, CloudSun, Droplets, Coins, TrendingUp, RefreshCcw, Sun, Cloud, CloudRain, ChevronRight, Calculator, ArrowDownUp, ChevronUp, ChevronDown, ChevronDown as ChevronDownIcon, ChevronLeft } from 'lucide-react';
+    import { Clock, MapPin, Camera, Coffee, Utensils, Info, Menu, X, Plane, Ticket, Star, BedDouble, CalendarDays, ArrowRight, CloudSun, Droplets, Coins, TrendingUp, RefreshCcw, Sun, Cloud, CloudRain, ChevronRight, Calculator, ArrowDownUp, ChevronUp, ChevronDown, ChevronDown as ChevronDownIcon, ChevronLeft, MessageCircle, Map, Phone, Plug, Copy, Check } from 'lucide-react';
 
     // --- DATA: 여행 데이터 (ISC Taiwan 2025) ---
     const tripData = {
@@ -134,7 +134,6 @@
       ]
     };
 
-    // 대만식 요일 한자 배열
     const chineseDays = ["", "第一天", "第二天", "第三天", "第四天"];
 
     // --- 기상청 날씨 코드 번역기 ---
@@ -160,7 +159,6 @@
       }
     };
 
-    // --- COMPONENTS ---
     const IconByType = ({ type }) => {
       switch (type) {
         case 'meal': return <Utensils className="w-5 h-5 text-orange-500" />;
@@ -175,20 +173,12 @@
 
     // 실시간 정보 위젯 (날씨 & 환율)
     const QuickInfoBoard = ({ onOpenWeather, onOpenExchange, liveWeather, liveExchange }) => {
-      const [isRefreshing, setIsRefreshing] = useState(false);
-
-      const handleRefresh = (e) => {
-        e.stopPropagation();
-        setIsRefreshing(true);
-        setTimeout(() => setIsRefreshing(false), 1000);
-      };
-
       const currentTemp = liveWeather ? Math.round(liveWeather.current.temperature_2m) : 22;
       const currentHumid = liveWeather ? liveWeather.current.relative_humidity_2m : 65;
       const weatherInfo = liveWeather ? parseWeatherCode(liveWeather.current.weather_code) : { desc: '조회중...', type: 'partly' };
 
       return (
-        <div className="w-full flex flex-col md:flex-row gap-5 mb-12 mt-8 lg:mt-10">
+        <div className="w-full flex flex-col md:flex-row gap-5 mb-4 mt-8 lg:mt-10">
           {/* 타이베이 날씨 카드 */}
           <div 
             onClick={onOpenWeather}
@@ -224,7 +214,6 @@
                 <div className="flex items-center gap-1.5 text-sm font-medium">
                   <Droplets className="w-3.5 h-3.5 text-blue-400" /> 습도 {currentHumid}%
                 </div>
-                {/* 날씨 출처 표기 영문 -> 한글 직관적 표기로 변경 */}
                 <p className="text-[11px] opacity-60 font-jua mt-0.5 tracking-wide">정보 제공: 오픈 메테오 기상청</p>
               </div>
             </div>
@@ -265,7 +254,6 @@
 
               <div className="hidden sm:flex flex-col items-end gap-1 text-slate-500">
                 <p className="text-xs opacity-70 mt-1">100 TWD = 약 <span className="font-bold">{Math.round(liveExchange * 100).toLocaleString()}</span>원</p>
-                {/* 환율 출처 표기 영문 -> 한글 직관적 표기로 변경 */}
                 <p className="text-[11px] opacity-60 font-jua mt-0.5 tracking-wide">기준: 실시간 시장 고시 환율</p>
               </div>
             </div>
@@ -274,7 +262,325 @@
       );
     };
 
-    // 주간 날씨 & 시간대별 상세 날씨 복합 모달
+    // --- NEW: 여행 필수 정보 퀵 툴바 (시계, 준비물, 회화, 노선도, 비상연락) ---
+    const TravelToolsBar = ({ onOpenPhrases, onOpenMap, onOpenEmergency, onOpenTips }) => {
+      const [time, setTime] = useState(new Date());
+
+      useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      // 시차 계산 (타이베이는 한국보다 1시간 느림)
+      const taipeiTime = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Taipei', hour: '2-digit', minute:'2-digit', hour12: false }).format(time);
+      const seoulTime = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', hour: '2-digit', minute:'2-digit', hour12: false }).format(time);
+
+      return (
+        <div className="w-full flex overflow-x-auto gap-3 pb-4 mb-6 no-scrollbar snap-x px-1">
+          {/* 1. 실시간 시계 */}
+          <div className="snap-start flex-shrink-0 flex items-center gap-2.5 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/80">
+            <Clock className="w-4 h-4 text-blue-500" />
+            <div className="flex items-baseline gap-2">
+              <span className="text-sm font-black text-slate-700 font-montserrat tracking-wide">{taipeiTime}</span>
+              <span className="text-[10px] text-slate-400 font-jua border-l border-slate-200 pl-2">한국 {seoulTime}</span>
+            </div>
+          </div>
+
+          {/* 2. 전압/준비물 팁 */}
+          <button onClick={onOpenTips} className="snap-start flex-shrink-0 flex items-center gap-2 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/80 hover:bg-yellow-50 hover:border-yellow-200 transition-colors group">
+            <Plug className="w-4 h-4 text-yellow-500 group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-bold text-slate-600 font-jua">대만 여행 팁</span>
+          </button>
+
+          {/* 3. 생존 회화 */}
+          <button onClick={onOpenPhrases} className="snap-start flex-shrink-0 flex items-center gap-2 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/80 hover:bg-green-50 hover:border-green-200 transition-colors group">
+            <MessageCircle className="w-4 h-4 text-green-500 group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-bold text-slate-600 font-jua">생존 회화</span>
+          </button>
+
+          {/* 4. 타이베이 지도 */}
+          <button onClick={onOpenMap} className="snap-start flex-shrink-0 flex items-center gap-2 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/80 hover:bg-blue-50 hover:border-blue-200 transition-colors group">
+            <Map className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-bold text-slate-600 font-jua">타이베이 지도</span>
+          </button>
+
+          {/* 5. 비상 연락망 */}
+          <button onClick={onOpenEmergency} className="snap-start flex-shrink-0 flex items-center gap-2 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100/80 hover:bg-red-50 hover:border-red-200 transition-colors group">
+            <Phone className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-bold text-slate-600 font-jua">긴급 연락망</span>
+          </button>
+        </div>
+      );
+    };
+
+    // --- MODALS ---
+    
+    // 1. 대만 여행 팁 모달
+    const TipsModal = ({ isOpen, onClose }) => {
+      if (!isOpen) return null;
+      return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="bg-white rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 p-6">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="font-black text-xl text-slate-800 font-jua flex items-center gap-2">
+                  <Plug className="w-5 h-5 text-yellow-500" /> 대만 여행 필수 팁
+                </h3>
+              </div>
+              <button onClick={onClose} className="p-1.5 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-4 font-jua text-slate-600">
+              <div className="bg-yellow-50/50 p-4 rounded-2xl border border-yellow-100">
+                <h4 className="font-bold text-yellow-800 mb-1 flex items-center gap-1">🔌 110V 돼지코 필수</h4>
+                <p className="text-sm text-yellow-700/80">대만은 110V 전압을 사용합니다. 11자 형태의 어댑터(돼지코)를 반드시 챙겨주세요.</p>
+              </div>
+              <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+                <h4 className="font-bold text-blue-800 mb-1 flex items-center gap-1">☂️ 우산 & 우비 챙기기</h4>
+                <p className="text-sm text-blue-700/80">타이베이는 갑작스러운 비가 자주 내립니다. 작고 가벼운 접이식 우산을 항상 휴대하세요.</p>
+              </div>
+              <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100">
+                <h4 className="font-bold text-emerald-800 mb-1 flex items-center gap-1">💳 이지카드(EasyCard)</h4>
+                <p className="text-sm text-emerald-700/80">지하철, 버스, 편의점 결제가 모두 가능한 만능 카드입니다. 공항이나 편의점에서 구매하세요.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // 2. 여행 회화 모달 (카테고리별 아코디언 추가)
+    const PhrasesModal = ({ isOpen, onClose }) => {
+      const [copiedIdx, setCopiedIdx] = useState(null);
+      const [expandedCat, setExpandedCat] = useState(null); 
+      
+      if (!isOpen) return null;
+
+      const categoryData = [
+        {
+          id: 'food',
+          name: "식당 / 야시장",
+          icon: "🥟",
+          phrases: [
+            { ko: "고수 빼주세요", tw: "不要香菜", pron: "부야오 샹차이" },
+            { ko: "고수 많이 주세요", tw: "多加香菜", pron: "뚜어 쟈 샹차이" },
+            { ko: "포장해 주세요", tw: "我要外帶", pron: "워 야오 와이따이" },
+            { ko: "이것 주세요", tw: "我要這個", pron: "워 야오 쩌거" },
+            { ko: "많이 주세요 (양을)", tw: "多給一點", pron: "뚜어 게이 이디엔" },
+            { ko: "덜 달게 해주세요", tw: "微糖", pron: "웨이 탕" },
+            { ko: "달게 해주세요", tw: "多糖", pron: "뚜어 탕" },
+            { ko: "얼음 적게 해주세요", tw: "少冰", pron: "샤오 빙" },
+            { ko: "얼음 많이 해주세요", tw: "多冰", pron: "뚜어 빙" }
+          ]
+        },
+        {
+          id: 'shopping',
+          name: "쇼핑 / 계산",
+          icon: "🛍️",
+          phrases: [
+            { ko: "얼마인가요?", tw: "多少錢？", pron: "뚜어샤오 치엔?" },
+            { ko: "영수증 주세요", tw: "請給我收據", pron: "칭 게이 워 쇼우쥐" },
+            { ko: "봉투 필요 없어요", tw: "不用袋子", pron: "부용 따이쯔" },
+            { ko: "조금 깎아주세요", tw: "算便宜一點吧", pron: "쑤완 피엔이 이디엔 바" }
+          ]
+        },
+        {
+          id: 'transport',
+          name: "교통 / 길찾기",
+          icon: "🚇",
+          phrases: [
+            { ko: "화장실이 어디인가요?", tw: "洗手間在哪裡？", pron: "시쇼우지엔 짜이 나리?" },
+            { ko: "타이베이역 가주세요", tw: "請到台北車站", pron: "칭 따오 타이베이 처짠" },
+            { ko: "여기서 내릴게요", tw: "在這裡下車", pron: "짜이 쩌리 시아처" }
+          ]
+        },
+        {
+          id: 'basic',
+          name: "기본 인사",
+          icon: "👋",
+          phrases: [
+            { ko: "안녕하세요", tw: "你好", pron: "니하오" },
+            { ko: "감사합니다", tw: "謝謝", pron: "씨에시에" },
+            { ko: "죄송합니다", tw: "對不起", pron: "뚜이부치" },
+            { ko: "괜찮아요 (상관없어요)", tw: "沒關係", pron: "메이꽌시" }
+          ]
+        }
+      ];
+
+      const handleCopy = (text, idxKey) => {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          setCopiedIdx(idxKey);
+          setTimeout(() => setCopiedIdx(null), 2000);
+        } catch (err) {
+          console.error('Copy failed', err);
+        }
+        document.body.removeChild(textArea);
+      };
+
+      return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="bg-white rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-green-50/50">
+              <h3 className="font-black text-xl text-green-800 font-jua flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-green-600" /> 필수 여행 회화
+              </h3>
+              <button onClick={onClose} className="p-1.5 bg-white rounded-full text-slate-500 border border-slate-200 hover:bg-slate-100 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="p-4 overflow-y-auto bg-slate-50 flex-1 space-y-3">
+              {categoryData.map((cat) => {
+                const isExpanded = expandedCat === cat.id;
+                return (
+                  <div key={cat.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300">
+                    <button 
+                      onClick={() => setExpandedCat(isExpanded ? null : cat.id)}
+                      className={`w-full p-4 flex items-center justify-between text-left transition-colors ${isExpanded ? 'bg-green-50/50' : 'hover:bg-slate-50'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{cat.icon}</span>
+                        <span className="font-bold text-slate-700 font-jua text-lg">{cat.name}</span>
+                      </div>
+                      <div className={`p-1.5 rounded-full transition-colors ${isExpanded ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
+                        <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                      </div>
+                    </button>
+                    
+                    <div className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}>
+                      <div className="accordion-content-inner">
+                        <div className="px-4 pb-4 space-y-3 pt-2">
+                          {cat.phrases.map((p, pIdx) => {
+                            const uniqueIdx = `${cat.id}-${pIdx}`;
+                            return (
+                              <div key={pIdx} className="bg-slate-50 p-3 rounded-xl border border-slate-100 relative group">
+                                <div className="flex justify-between items-start mb-1.5">
+                                  <span className="font-bold text-slate-600 font-jua text-sm pr-16">{p.ko}</span>
+                                  <button 
+                                    onClick={() => handleCopy(p.tw, uniqueIdx)}
+                                    className={`absolute top-3 right-3 px-2 py-1 rounded-lg flex items-center gap-1 text-[10px] font-bold transition-colors ${copiedIdx === uniqueIdx ? 'bg-green-100 text-green-700' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-100 shadow-sm'}`}
+                                  >
+                                    {copiedIdx === uniqueIdx ? <><Check className="w-3 h-3" /> 복사됨</> : <><Copy className="w-3 h-3" /> 복사</>}
+                                  </button>
+                                </div>
+                                <div className="text-xl font-black text-slate-800 mb-1 tracking-wide">{p.tw}</div>
+                                <div className="text-xs font-medium text-green-600 font-jua flex items-center gap-1.5">
+                                  <span className="text-[10px] bg-green-100 px-1.5 py-0.5 rounded text-green-700">발음</span> {p.pron}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // 3. 지도 모달 (구글맵 연동)
+    const MapModal = ({ isOpen, onClose }) => {
+      if (!isOpen) return null;
+      return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" onClick={onClose}></div>
+          <div className="bg-white rounded-3xl w-full h-[85vh] max-w-4xl relative z-10 flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white z-20">
+              <h3 className="font-black text-xl text-blue-900 font-jua flex items-center gap-2">
+                <Map className="w-5 h-5 text-blue-600" /> 타이베이 지도
+              </h3>
+              <button onClick={onClose} className="p-1.5 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="flex-1 w-full bg-slate-100 relative">
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d115681.29592731265!2d121.46504225!3d25.047761!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442ac6b61dbbd8b%3A0xbcd1baad5c06a482!2sTaipei%20City%2C%20Taiwan!5e0!3m2!1sko!2skr!4v1708400000000!5m2!1sko!2skr" 
+                width="100%" 
+                height="100%" 
+                style={{ border: 0 }} 
+                allowFullScreen="" 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+
+            <div className="p-4 bg-white border-t border-slate-100 flex gap-3">
+              <a 
+                href="https://www.google.com/maps/place/Taipei+City,+Taiwan" 
+                target="_blank" 
+                rel="noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 py-3.5 rounded-xl text-sm font-bold font-jua hover:bg-emerald-100 transition-colors shadow-sm active:scale-95"
+              >
+                🗺️ 구글맵 앱에서 검색하기
+              </a>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // 4. 긴급 연락망 모달
+    const EmergencyModal = ({ isOpen, onClose }) => {
+      if (!isOpen) return null;
+      
+      const contacts = [
+        { name: "주 타이베이 한국 대표부", phone: "02-2758-8320", icon: "🏛️" },
+        { name: "긴급 당직 영사 (야간/휴일)", phone: "0912-069-230", icon: "🚨" },
+        { name: "경찰 (범죄 신고)", phone: "110", icon: "🚓" },
+        { name: "구급차 / 소방서", phone: "119", icon: "🚑" },
+      ];
+
+      return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="bg-white rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-red-50 p-5 border-b border-red-100 flex justify-between items-center">
+              <h3 className="font-black text-xl text-red-700 font-jua flex items-center gap-2">
+                <Phone className="w-5 h-5 text-red-500" /> 긴급 연락망
+              </h3>
+              <button onClick={onClose} className="p-1.5 bg-white rounded-full text-slate-500 border border-slate-200 hover:bg-slate-100 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-5 space-y-3 bg-slate-50">
+              {contacts.map((c, idx) => (
+                <a href={`tel:${c.phone.replace(/-/g, '')}`} key={idx} className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-200 hover:border-red-300 hover:shadow-md transition-all active:scale-95 group">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{c.icon}</span>
+                    <div>
+                      <h4 className="font-bold text-slate-800 text-sm font-jua">{c.name}</h4>
+                      <p className="font-montserrat font-bold text-slate-500 text-sm mt-0.5">{c.phone}</p>
+                    </div>
+                  </div>
+                  <div className="bg-red-50 p-2 rounded-full text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors">
+                    <Phone className="w-4 h-4" />
+                  </div>
+                </a>
+              ))}
+            </div>
+            <div className="p-4 bg-white border-t border-slate-100 text-center">
+              <p className="text-xs text-slate-500 font-jua">버튼을 누르면 즉시 전화가 연결됩니다.</p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // --- 기존 모달들 (Weather, Exchange) ---
     const WeatherModal = ({ isOpen, onClose, liveWeather }) => {
       const [selectedDateStr, setSelectedDateStr] = useState(null);
 
@@ -423,7 +729,6 @@
             {!selectedDateStr && (
               <div className="p-4 bg-slate-50 text-center border-t border-slate-100 flex flex-col gap-1 items-center">
                 <p className="text-xs text-slate-500 font-medium">대만은 비가 자주 오니 <span className="font-bold text-blue-500">작은 우산</span>을 꼭 챙겨주세요 ☔️</p>
-                {/* 모달 하단 출처 표기 한글로 변경 */}
                 <p className="text-[10px] text-slate-400 font-jua mt-1 tracking-wide">데이터 제공: 글로벌 기상 정보 (Open-Meteo)</p>
               </div>
             )}
@@ -432,7 +737,6 @@
       );
     };
 
-    // 자유계산 & 환율 수정 기능을 갖춘 완벽한 계산기
     const ExchangeModal = ({ isOpen, onClose, liveExchange }) => {
       const [twdVal, setTwdVal] = useState("100");
       const [krwVal, setKrwVal] = useState("");
@@ -595,7 +899,6 @@
             
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex flex-col justify-center items-center gap-1">
               <p className="text-[11px] text-slate-500 font-medium font-jua">양쪽 칸 모두 자유롭게 숫자를 입력할 수 있습니다.</p>
-              {/* 모달 하단 출처 표기 한글로 변경 */}
               <p className="text-[10px] text-slate-400 font-jua mt-1 tracking-wide">데이터 제공: 실시간 글로벌 외환 API</p>
             </div>
           </div>
@@ -679,10 +982,15 @@
     };
 
     function App() {
-      const [selectedDay, setSelectedDay] = useState(1);
+      const [selectedDay, setSelectedDay] = useState(null);
       const [isMenuOpen, setIsMenuOpen] = useState(false);
+      
       const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
       const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
+      const [isTipsModalOpen, setIsTipsModalOpen] = useState(false);
+      const [isPhrasesModalOpen, setIsPhrasesModalOpen] = useState(false);
+      const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+      const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
       
       const [liveWeather, setLiveWeather] = useState(null);
       const [liveExchange, setLiveExchange] = useState("42.50"); 
@@ -704,8 +1012,7 @@
       }, []);
 
       return (
-        <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100">
-          {/* 1. Header (Vibe & Inspiration) */}
+        <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100 pb-20">
           <header className="relative flex flex-col w-full min-h-[650px] lg:min-h-[85vh] overflow-hidden bg-gray-900">
             <div className="absolute inset-0 z-0">
               <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei City Morning Vibe" className="w-full h-full object-cover object-center brightness-95" />
@@ -726,7 +1033,6 @@
 
             <div className="relative z-10 flex-1 min-h-[40px]"></div>
 
-            {/* Hero Content */}
             <div className="relative z-10 w-full px-6 md:px-12 pb-20 md:pb-28 max-w-6xl mx-auto flex flex-col justify-end">
               <div className="text-4xl md:text-5xl lg:text-6xl font-montserrat font-black text-[#FFD700] mb-2 tracking-[0.15em] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] self-start">
                 2025
@@ -753,7 +1059,6 @@
             </div>
           </header>
 
-          {/* 2. Main Layout */}
           <main className="max-w-6xl mx-auto px-4 py-8 -mt-4 md:-mt-6 relative z-20">
             <div className="animate-fade-in-up">
               <QuickInfoBoard 
@@ -764,13 +1069,21 @@
               />
             </div>
 
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
+              <TravelToolsBar 
+                onOpenTips={() => setIsTipsModalOpen(true)}
+                onOpenPhrases={() => setIsPhrasesModalOpen(true)}
+                onOpenMap={() => setIsMapModalOpen(true)}
+                onOpenEmergency={() => setIsEmergencyModalOpen(true)}
+              />
+            </div>
+
             <div className="flex flex-col gap-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
               {tripData.days.map((day) => {
                 const isExpanded = selectedDay === day.day;
                 
                 return (
                   <div key={day.day} className="flex flex-col">
-                    {/* 아코디언 버튼 영역 - 확장 시 대만 감성 폭발 (야시장, 사찰의 어두운 우드/블랙톤 + 금빛 포인트) */}
                     <button 
                       onClick={() => setSelectedDay(isExpanded ? null : day.day)}
                       className={`w-full text-left flex items-center justify-between p-4 md:p-6 rounded-[2rem] transition-all duration-500 shadow-sm border overflow-hidden relative group ${
@@ -779,13 +1092,11 @@
                           : 'bg-white hover:bg-red-50/40 border-slate-200'
                       }`}
                     >
-                      {/* 확장 시 동양적인 금빛 점선 패턴 추가 (은은한 고급스러움) */}
                       {isExpanded && (
                         <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FFD700 1.5px, transparent 1.5px)', backgroundSize: '24px 24px' }}></div>
                       )}
 
                       <div className="flex items-center gap-4 md:gap-6 relative z-10">
-                        {/* 대만식 붉은 도장(낙관) - 확장 여부와 상관없이 항상 강렬한 붉은색 유지 */}
                         <div className={`flex flex-col items-center justify-center w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-[1.1rem] bg-[#8B1D1D] text-white shadow-md relative overflow-hidden transition-transform duration-500 ${isExpanded ? 'scale-105 shadow-red-900/40' : 'group-hover:scale-105'}`}>
                           <div className="absolute inset-[4px] border border-white/30 rounded-[0.8rem] pointer-events-none"></div>
                           <span className="font-jua text-base md:text-xl leading-none whitespace-nowrap mt-1">{chineseDays[day.day]}</span>
@@ -793,11 +1104,9 @@
                         </div>
 
                         <div>
-                          {/* 날짜: 확장 시 흰색으로 명확하게 */}
                           <h2 className={`text-xl md:text-2xl lg:text-3xl font-black font-montserrat tracking-tight transition-colors duration-500 ${isExpanded ? 'text-white' : 'text-slate-800'}`}>
                             {day.date}
                           </h2>
-                          {/* 타이틀: 확장 시 화려한 금빛으로 하이라이트 */}
                           <p className={`text-sm md:text-base font-jua mt-1 transition-colors duration-500 ${isExpanded ? 'text-[#FFD700]' : 'text-slate-500'}`}>
                             {day.title}
                           </p>
@@ -828,22 +1137,18 @@
 
           </main>
 
-          <footer className="bg-slate-100 border-t border-slate-200 py-16 mt-16 text-center text-slate-400 text-sm">
+          <footer className="bg-slate-100 border-t border-slate-200 py-12 mt-10 text-center text-slate-400 text-sm">
             <p className="font-montserrat font-bold text-slate-500">© 2026 INCAR Financial Service. All rights reserved.</p>
             <p className="mt-2 text-xs text-slate-400 font-jua opacity-80">Designed with First Principles.</p>
           </footer>
 
-          {/* Modals */}
-          <WeatherModal 
-            isOpen={isWeatherModalOpen} 
-            onClose={() => setIsWeatherModalOpen(false)} 
-            liveWeather={liveWeather} 
-          />
-          <ExchangeModal 
-            isOpen={isExchangeModalOpen} 
-            onClose={() => setIsExchangeModalOpen(false)} 
-            liveExchange={liveExchange} 
-          />
+          <WeatherModal isOpen={isWeatherModalOpen} onClose={() => setIsWeatherModalOpen(false)} liveWeather={liveWeather} />
+          <ExchangeModal isOpen={isExchangeModalOpen} onClose={() => setIsExchangeModalOpen(false)} liveExchange={liveExchange} />
+          
+          <TipsModal isOpen={isTipsModalOpen} onClose={() => setIsTipsModalOpen(false)} />
+          <PhrasesModal isOpen={isPhrasesModalOpen} onClose={() => setIsPhrasesModalOpen(false)} />
+          <MapModal isOpen={isMapModalOpen} onClose={() => setIsMapModalOpen(false)} />
+          <EmergencyModal isOpen={isEmergencyModalOpen} onClose={() => setIsEmergencyModalOpen(false)} />
         </div>
       );
     }
