@@ -186,42 +186,47 @@
       };
 
       return (
-        <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-white">
           <div className="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei" className="w-full h-full object-cover object-center brightness-50" />
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent" />
+            {/* 이전 사진으로 복구 (아침 안개 낀 타이베이 도시 전경) */}
+            <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei" className="w-full h-full object-cover object-center" />
+            {/* 텍스트 가독성을 위한 단일 어두운 필터 (블러 없음) */}
+            <div className="absolute inset-0 bg-black/20" />
           </div>
 
           <div className="relative z-10 w-full max-w-sm animate-fade-in-up">
             <div className="text-center mb-10">
-              <h1 className="text-4xl font-playfair font-black text-white mb-2 drop-shadow-md">INCAR<br/>Spring Camp</h1>
-              <p className="text-[#FFD700] font-montserrat font-bold tracking-widest">2025 in Taiwan</p>
+              <h1 className="text-4xl font-playfair font-black text-white mb-2 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">INCAR<br/>Spring Camp</h1>
+              <p className="text-[#FFD700] font-montserrat font-bold tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">2025 in Taiwan</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-xl p-8 rounded-[2rem] border border-white/20 shadow-2xl">
-              <h2 className="text-xl font-jua text-white mb-6 text-center flex items-center justify-center gap-2">
-                <UserCircle className="w-6 h-6" /> 맞춤 일정 확인하기
+            {/* 완전한 불투명 흰색 폼 */}
+            <form onSubmit={handleSubmit} className="bg-white p-8 rounded-[2rem] shadow-2xl border-0">
+              <h2 className="text-xl font-jua text-slate-800 mb-6 text-center flex items-center justify-center gap-2">
+                <UserCircle className="w-6 h-6 text-blue-600" /> 맞춤 일정 확인하기
               </h2>
               
               <div className="mb-6">
-                <label className="block text-xs font-montserrat font-bold text-gray-300 uppercase tracking-widest mb-2">Employee ID</label>
+                <label className="block text-xs font-montserrat font-bold text-slate-500 uppercase tracking-widest mb-2">Employee ID</label>
                 <input 
                   type="text" 
                   value={empId}
                   onChange={(e) => { setEmpId(e.target.value); setError(''); }}
                   placeholder="사번을 입력하세요 (예: 1611499)"
-                  className="w-full bg-black/30 border border-gray-600 rounded-xl px-4 py-3.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-all font-montserrat"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all font-montserrat font-bold"
                 />
-                {error && <p className="text-red-400 text-xs font-jua mt-2 animate-pulse">{error}</p>}
+                {error && <p className="text-red-500 text-xs font-jua mt-2 animate-pulse">{error}</p>}
               </div>
 
-              <button type="submit" className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-gray-900 font-bold font-jua py-3.5 rounded-xl transition-all shadow-lg active:scale-95 text-lg">
+              <button type="submit" className="w-full bg-[#FFD700] hover:bg-yellow-400 text-slate-900 font-bold font-jua py-3.5 rounded-xl transition-all shadow-md active:scale-95 text-lg">
                 내 일정 보기
               </button>
             </form>
-            <p className="text-center text-gray-400 text-xs font-jua mt-6 opacity-80">
-              QR 코드를 스캔하셨다면 자동으로 로그인됩니다.
-            </p>
+            <div className="text-center mt-6">
+              <p className="text-slate-800 bg-white rounded-full px-4 py-1.5 text-xs font-jua shadow-md inline-block">
+                QR 코드를 스캔하셨다면 자동으로 로그인됩니다.
+              </p>
+            </div>
           </div>
         </div>
       );
@@ -368,7 +373,7 @@
       );
     };
 
-    // --- 복구된 모달 컴포넌트들 시작 ---
+    // --- 모달 컴포넌트들 시작 ---
     const WeatherModal = ({ isOpen, onClose, liveWeather }) => {
       const [selectedDateStr, setSelectedDateStr] = useState(null);
 
@@ -422,10 +427,10 @@
 
       return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="absolute inset-0 bg-black/60 transition-opacity" onClick={onClose}></div>
           <div className="bg-white rounded-3xl w-full max-w-md relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             {!selectedDateStr ? (
-              <div className="bg-blue-50/50 p-5 border-b border-slate-100 flex justify-between items-center">
+              <div className="bg-blue-50 p-5 border-b border-slate-100 flex justify-between items-center">
                 <div>
                   <h3 className="font-montserrat font-black text-xl text-slate-800 tracking-tight flex items-center gap-2">
                     Taipei Live Forecast <span className="animate-pulse h-2 w-2 bg-emerald-500 rounded-full"></span>
@@ -439,7 +444,7 @@
             ) : (
               <div className="bg-blue-600 p-5 border-b border-blue-700 flex justify-between items-center text-white shadow-inner">
                 <div className="flex items-center gap-3">
-                  <button onClick={() => setSelectedDateStr(null)} className="p-1.5 bg-blue-700/50 rounded-full text-blue-100 hover:text-white hover:bg-blue-800 transition-colors">
+                  <button onClick={() => setSelectedDateStr(null)} className="p-1.5 bg-blue-700 rounded-full text-blue-100 hover:text-white hover:bg-blue-800 transition-colors">
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <div>
@@ -449,7 +454,7 @@
                     <p className="text-sm font-jua text-blue-200">시간대별 상세 날씨</p>
                   </div>
                 </div>
-                <button onClick={onClose} className="p-2 bg-blue-700/50 rounded-full text-blue-100 hover:text-white transition-colors">
+                <button onClick={onClose} className="p-2 bg-blue-700 rounded-full text-blue-100 hover:text-white transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -461,7 +466,7 @@
                   <div 
                     key={idx} 
                     onClick={() => setSelectedDateStr(day.rawDate)}
-                    className={`flex items-center justify-between p-3 my-1 rounded-2xl cursor-pointer transition-colors group ${day.isToday ? 'bg-blue-50/80 border border-blue-200' : 'hover:bg-slate-50 border border-transparent'}`}
+                    className={`flex items-center justify-between p-3 my-1 rounded-2xl cursor-pointer transition-colors group ${day.isToday ? 'bg-blue-50 border border-blue-200' : 'hover:bg-slate-50 border border-transparent'}`}
                   >
                     <div className="flex items-center gap-3 w-[40%] relative">
                       <span className={`font-montserrat font-bold text-base ${day.isToday ? 'text-blue-900' : 'text-slate-600 group-hover:text-blue-600'}`}>{day.date}</span>
@@ -492,7 +497,7 @@
                     <div className="w-1/3 text-right">Temp</div>
                   </div>
                   {hourlyData.length > 0 ? hourlyData.map((hourData, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors rounded-xl">
+                    <div key={idx} className="flex items-center justify-between p-3 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors rounded-xl">
                       <div className="w-1/3 font-montserrat font-bold text-slate-700">
                         {hourData.hour}
                       </div>
@@ -585,9 +590,9 @@
 
       return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="absolute inset-0 bg-black/60 transition-opacity" onClick={onClose}></div>
           <div className="bg-white rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="bg-yellow-50/50 p-5 border-b border-yellow-100/50 flex justify-between items-center">
+            <div className="bg-yellow-50 p-5 border-b border-yellow-100 flex justify-between items-center">
               <div>
                 <h3 className="font-montserrat font-black text-xl text-slate-800 tracking-tight flex items-center gap-2">
                   Currency Calc <Calculator className="w-5 h-5 text-yellow-600" />
@@ -600,7 +605,7 @@
             </div>
             
             <div className="p-6 pb-4">
-              <div className="bg-emerald-50/50 rounded-2xl p-3 mb-5 border border-emerald-100 flex items-center justify-between">
+              <div className="bg-emerald-50 rounded-2xl p-3 mb-5 border border-emerald-100 flex items-center justify-between">
                 <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest pl-1">적용 환율</span>
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-600 font-montserrat">
                   <span>1 TWD =</span>
@@ -685,7 +690,7 @@
       if (!isOpen) return null;
       return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="absolute inset-0 bg-black/60 transition-opacity" onClick={onClose}></div>
           <div className="bg-white rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
@@ -698,17 +703,17 @@
               </button>
             </div>
             <div className="space-y-4 font-jua text-slate-600">
-              <div className="bg-yellow-50/50 p-4 rounded-2xl border border-yellow-100">
+              <div className="bg-yellow-50 p-4 rounded-2xl border border-yellow-100">
                 <h4 className="font-bold text-yellow-800 mb-1 flex items-center gap-1">🔌 110V 돼지코 필수</h4>
-                <p className="text-sm text-yellow-700/80">대만은 110V 전압을 사용합니다. 11자 형태의 어댑터(돼지코)를 반드시 챙겨주세요.</p>
+                <p className="text-sm text-yellow-700">대만은 110V 전압을 사용합니다. 11자 형태의 어댑터(돼지코)를 반드시 챙겨주세요.</p>
               </div>
-              <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+              <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
                 <h4 className="font-bold text-blue-800 mb-1 flex items-center gap-1">☂️ 우산 & 우비 챙기기</h4>
-                <p className="text-sm text-blue-700/80">타이베이는 갑작스러운 비가 자주 내립니다. 작고 가벼운 접이식 우산을 항상 휴대하세요.</p>
+                <p className="text-sm text-blue-700">타이베이는 갑작스러운 비가 자주 내립니다. 작고 가벼운 접이식 우산을 항상 휴대하세요.</p>
               </div>
-              <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100">
+              <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
                 <h4 className="font-bold text-emerald-800 mb-1 flex items-center gap-1">💳 이지카드(EasyCard)</h4>
-                <p className="text-sm text-emerald-700/80">지하철, 버스, 편의점 결제가 모두 가능한 만능 카드입니다. 공항이나 편의점에서 구매하세요.</p>
+                <p className="text-sm text-emerald-700">지하철, 버스, 편의점 결제가 모두 가능한 만능 카드입니다. 공항이나 편의점에서 구매하세요.</p>
               </div>
             </div>
           </div>
@@ -760,9 +765,9 @@
 
       return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="absolute inset-0 bg-black/60 transition-opacity" onClick={onClose}></div>
           <div className="bg-white rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-green-50/50">
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-green-50">
               <h3 className="font-black text-xl text-green-800 font-jua flex items-center gap-2">
                 <MessageCircle className="w-5 h-5 text-green-600" /> 필수 여행 회화
               </h3>
@@ -778,7 +783,7 @@
                   <div key={cat.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300">
                     <button 
                       onClick={() => setExpandedCat(isExpanded ? null : cat.id)}
-                      className={`w-full p-4 flex items-center justify-between text-left transition-colors ${isExpanded ? 'bg-green-50/50' : 'hover:bg-slate-50'}`}
+                      className={`w-full p-4 flex items-center justify-between text-left transition-colors ${isExpanded ? 'bg-green-50' : 'hover:bg-slate-50'}`}
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-xl">{cat.icon}</span>
@@ -828,7 +833,7 @@
       if (!isOpen) return null;
       return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" onClick={onClose}></div>
+          <div className="absolute inset-0 bg-black/80 transition-opacity" onClick={onClose}></div>
           <div className="bg-white rounded-3xl w-full h-[85vh] max-w-4xl relative z-10 flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white z-20">
               <h3 className="font-black text-xl text-blue-900 font-jua flex items-center gap-2">
@@ -878,7 +883,7 @@
 
       return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="absolute inset-0 bg-black/60 transition-opacity" onClick={onClose}></div>
           <div className="bg-white rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="bg-red-50 p-5 border-b border-red-100 flex justify-between items-center">
               <h3 className="font-black text-xl text-red-700 font-jua flex items-center gap-2">
@@ -988,10 +993,10 @@
 
     const EventCard = ({ event }) => (
       <div className="group relative bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-100/80 flex flex-col h-full hover:-translate-y-1.5 overflow-hidden">
-        <div className="relative h-48 md:h-56 overflow-hidden bg-gray-100">
+        <div className="relative h-48 md:h-56 bg-slate-100 overflow-hidden">
           <img src={event.image} alt={event.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-sm font-bold text-gray-800 shadow-sm flex items-center gap-1.5 font-montserrat">
+          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute top-4 left-4 bg-white px-3.5 py-1.5 rounded-xl text-sm font-bold text-slate-800 shadow-sm flex items-center gap-1.5 font-montserrat">
             <Clock className="w-4 h-4 text-blue-600" /> {event.time}
           </div>
         </div>
@@ -999,15 +1004,15 @@
           <div className="absolute -top-7 right-5 w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg border border-gray-50 z-10 group-hover:scale-110 transition-transform duration-300">
             <IconByType type={event.type} />
           </div>
-          <h3 className={`text-xl font-bold mb-2 tracking-tight transition-colors ${event.type === 'star' ? 'text-purple-700' : 'text-gray-800 group-hover:text-blue-700'}`}>
+          <h3 className={`text-xl font-bold mb-2 tracking-tight transition-colors ${event.type === 'star' ? 'text-purple-700' : 'text-slate-800 group-hover:text-blue-700'}`}>
             {event.title}
           </h3>
-          <div className="flex items-center text-gray-500 text-sm mb-4 font-medium">
-            <MapPin className="w-4 h-4 mr-1 text-gray-400" />
+          <div className="flex items-center text-slate-500 text-sm mb-4 font-medium">
+            <MapPin className="w-4 h-4 mr-1 text-slate-400" />
             {event.location}
           </div>
           {event.note && (
-            <div className={`mt-auto p-3.5 rounded-xl flex items-start gap-2.5 border ${event.type === 'star' ? 'bg-yellow-50/80 border-yellow-100/50' : 'bg-slate-50 border-slate-100'}`}>
+            <div className={`mt-auto p-3.5 rounded-xl flex items-start gap-2.5 border ${event.type === 'star' ? 'bg-yellow-50 border-yellow-100' : 'bg-slate-50 border-slate-100'}`}>
               <Info className={`w-4 h-4 flex-shrink-0 mt-0.5 ${event.type === 'star' ? 'text-yellow-600' : 'text-blue-500'}`} />
               <p className={`text-sm leading-relaxed font-medium ${event.type === 'star' ? 'text-yellow-800' : 'text-slate-700'}`}>
                 {event.note}
@@ -1021,11 +1026,11 @@
     const EndOfDayCard = ({ day }) => (
       <div className="group relative overflow-hidden rounded-[2rem] shadow-sm border border-slate-100 h-full min-h-[250px] flex items-center justify-center p-3">
         <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden flex items-center justify-center">
-            <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800" alt="Relaxing Hotel Room" className="absolute inset-0 w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-700" />
-            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors duration-500" />
+            <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800" alt="Relaxing Hotel Room" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-500" />
             <div className="relative z-10 text-center text-white p-6 transform group-hover:-translate-y-2 transition-transform duration-500">
-            <div className="bg-white/20 backdrop-blur-md p-4 rounded-full inline-block mb-4 shadow-lg border border-white/10">
-                <BedDouble className="w-8 h-8 text-white" />
+            <div className="bg-white p-4 rounded-full inline-block mb-4 shadow-lg">
+                <BedDouble className="w-8 h-8 text-slate-800" />
             </div>
             <h3 className="text-xl md:text-2xl font-bold mb-2 tracking-wide font-jua">Day {day} 일정 종료</h3>
             </div>
@@ -1035,15 +1040,17 @@
 
     // --- 로딩 화면 컴포넌트 ---
     const LoadingScreen = () => (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 relative overflow-hidden text-white">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 relative overflow-hidden text-slate-800">
         <div className="absolute inset-0 z-0">
-          <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei" className="w-full h-full object-cover object-center brightness-50" />
-          <div className="absolute inset-0 bg-gray-900/80" />
+          {/* 이전 사진으로 복구 (아침 안개 낀 타이베이 도시 전경) */}
+          <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei" className="w-full h-full object-cover object-center" />
+          {/* 텍스트 가독성을 위한 단일 어두운 필터 (블러 없음) */}
+          <div className="absolute inset-0 bg-black/20" />
         </div>
-        <div className="relative z-10 flex flex-col items-center animate-pulse">
-          <RefreshCcw className="w-12 h-12 animate-spin text-[#FFD700] mb-4" />
-          <h2 className="text-2xl font-jua tracking-wide">최신 명단 동기화 중...</h2>
-          <p className="text-sm font-montserrat text-gray-400 mt-2">Connecting to Google Sheets</p>
+        <div className="relative z-10 flex flex-col items-center animate-pulse bg-white p-10 rounded-3xl shadow-2xl">
+          <RefreshCcw className="w-12 h-12 animate-spin text-blue-600 mb-4" />
+          <h2 className="text-2xl font-jua tracking-wide text-slate-800">최신 명단 동기화 중...</h2>
+          <p className="text-sm font-montserrat text-slate-500 mt-2">Connecting to Google Sheets</p>
         </div>
       </div>
     );
@@ -1119,7 +1126,6 @@
       }, []);
 
       useEffect(() => {
-        // 주간/시간별 날씨 데이터를 가져오기 위해 원래의 전체 API 주소로 복원
         fetch('https://api.open-meteo.com/v1/forecast?latitude=25.0478&longitude=121.5319&current=temperature_2m,relative_humidity_2m,weather_code&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTaipei')
           .then(res => res.json())
           .then(data => setLiveWeather(data))
@@ -1155,27 +1161,29 @@
 
       return (
         <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100 pb-20">
-          <header className="relative flex flex-col w-full min-h-[400px] md:min-h-[500px] overflow-hidden bg-gray-900">
+          <header className="relative flex flex-col w-full min-h-[400px] md:min-h-[500px] overflow-hidden bg-white">
             <div className="absolute inset-0 z-0">
-              <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei City" className="w-full h-full object-cover object-center brightness-75" />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-slate-50" />
+              {/* 이전 사진으로 복구 (아침 안개 낀 타이베이 도시 전경) */}
+              <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei City" className="w-full h-full object-cover object-center" />
+              {/* 회색 그라데이션 필터를 완전히 삭제하고 단순 어두운 틴트 하나만 적용 */}
+              <div className="absolute inset-0 bg-black/20" />
             </div>
             
-            <nav className="relative z-10 w-full p-4 md:p-6 flex justify-between items-center text-white">
-              <div className="text-lg md:text-xl font-black tracking-tight bg-black/30 backdrop-blur-md px-5 py-2 rounded-full border border-white/20 font-montserrat shadow-lg">
+            <nav className="relative z-10 w-full p-4 md:p-6 flex justify-between items-center text-slate-800">
+              <div className="text-lg md:text-xl font-black tracking-tight bg-white px-5 py-2 rounded-full font-montserrat shadow-md">
                 INCAR TRIP
               </div>
             </nav>
 
             <div className="relative z-10 w-full px-4 md:px-12 pt-10 pb-6 max-w-6xl mx-auto flex flex-col justify-end">
-              <div className="text-3xl md:text-5xl font-montserrat font-black text-[#FFD700] mb-1 tracking-[0.1em] drop-shadow-lg">
+              <div className="text-3xl md:text-5xl font-montserrat font-black text-[#FFD700] mb-1 tracking-[0.1em] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
                 2025
               </div>
-              <h1 className="text-5xl md:text-7xl text-white font-playfair font-bold drop-shadow-xl z-20">
+              <h1 className="text-5xl md:text-7xl text-white font-playfair font-bold drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] z-20">
                 Spring Camp
               </h1>
-              <div className="mt-4 flex items-center gap-2 bg-black/40 w-fit backdrop-blur-md px-4 py-2 rounded-xl text-sm md:text-base font-bold shadow-xl font-montserrat tracking-wide text-white">
-                <CalendarDays className="w-4 h-4" />
+              <div className="mt-4 flex items-center gap-2 bg-white w-fit px-4 py-2 rounded-xl text-sm md:text-base font-bold shadow-md font-montserrat tracking-wide text-slate-800">
+                <CalendarDays className="w-4 h-4 text-blue-600" />
                 {tripData.dates}
               </div>
             </div>
@@ -1195,7 +1203,6 @@
               />
             </div>
 
-            {/* Travel Tools 아코디언 추가 (기능 모두 동작) */}
             <div className="animate-fade-in-up" style={{ animationDelay: '0.08s' }}>
               <TravelToolsAccordion 
                 onOpenTips={() => setIsTipsModalOpen(true)}
@@ -1261,7 +1268,6 @@
             <p className="mt-2 text-xs text-slate-400 font-jua opacity-80">Designed with First Principles.</p>
           </footer>
 
-          {/* 모달 렌더링을 완전히 복구합니다 */}
           <WeatherModal isOpen={isWeatherModalOpen} onClose={() => setIsWeatherModalOpen(false)} liveWeather={liveWeather} />
           <ExchangeModal isOpen={isExchangeModalOpen} onClose={() => setIsExchangeModalOpen(false)} liveExchange={liveExchange} />
           <TipsModal isOpen={isTipsModalOpen} onClose={() => setIsTipsModalOpen(false)} />
