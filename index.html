@@ -22,7 +22,10 @@
     }
   </script>
 
-  <!-- 4. 글로벌 스타일 및 폰트 -->
+  <!-- 4. PapaParse (구글 시트 실시간 연동을 위한 CSV 파서) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+  <!-- 5. 글로벌 스타일 및 폰트 -->
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Jua&family=Montserrat:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap');
     
@@ -36,9 +39,7 @@
       letter-spacing: -0.05em; 
       line-height: 0.85;       
     }
-    .custom-logo-text span {
-      display: block;
-    }
+    .custom-logo-text span { display: block; }
     
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -56,12 +57,8 @@
       grid-template-rows: 0fr;
       transition: grid-template-rows 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    .accordion-grid.expanded {
-      grid-template-rows: 1fr;
-    }
-    .accordion-content-inner {
-      overflow: hidden;
-    }
+    .accordion-grid.expanded { grid-template-rows: 1fr; }
+    .accordion-content-inner { overflow: hidden; }
   </style>
 </head>
 <body>
@@ -71,10 +68,10 @@
   <script type="text/babel" data-type="module">
     import React, { useState, useEffect } from 'react';
     import { createRoot } from 'react-dom/client';
-    import { Clock, MapPin, Camera, Coffee, Utensils, Info, Menu, X, Plane, Ticket, Star, BedDouble, CalendarDays, ArrowRight, CloudSun, Droplets, Coins, TrendingUp, RefreshCcw, Sun, Cloud, CloudRain, ChevronRight, Calculator, ArrowDownUp, ChevronUp, ChevronDown, ChevronDown as ChevronDownIcon, ChevronLeft, MessageCircle, Map, Phone, Plug, Copy, Check } from 'lucide-react';
+    import { Clock, MapPin, Camera, Coffee, Utensils, Info, Menu, X, Plane, Ticket, Star, BedDouble, CalendarDays, ArrowRight, CloudSun, Droplets, Coins, TrendingUp, RefreshCcw, Sun, Cloud, CloudRain, ChevronRight, Calculator, ArrowDownUp, ChevronUp, ChevronDown, ChevronDown as ChevronDownIcon, ChevronLeft, MessageCircle, Map, Phone, Plug, Copy, Check, Bus, UserCircle, LogOut } from 'lucide-react';
 
-    // --- DATA: 여행 데이터 (ISC Taiwan 2025) ---
-    const tripData = {
+    // --- DATA: 여행 베이스 데이터 (ISC Taiwan 2025) ---
+    const BASE_TRIP_DATA = {
       title: "2025 INCAR Spring Camp",
       subtitle: "in Taiwan",
       dates: "2026.03.11 (수) - 03.14 (토)",
@@ -86,7 +83,7 @@
           date: "3월 11일 (수)",
           theme: "City & History",
           events: [
-            { time: "09:00", type: "move", title: "인천 출발", location: "ICN ✈️ TPE", note: "아시아나 OZ 711 / 대한항공 KE 2021 (기내식 포함)", image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800" },
+            { time: "09:00", type: "move", title: "인천 출발", location: "ICN ✈️ TPE", note: "기내식 포함 (항공편 확인 요망)", image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800" },
             { time: "12:30", type: "meal", title: "중식 | 우육면", location: "현지 맛집", note: "대만의 소울 푸드, 진한 국물의 우육면", image: "https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&q=80&w=800" },
             { time: "13:30", type: "spot", title: "단수이 & 홍마오청", location: "Tamsui District", note: "붉은 벽돌의 역사와 말할 수 없는 비밀 촬영지", image: "https://images.unsplash.com/photo-1505342878433-4d7a5b328109?auto=format&fit=crop&q=80&w=800" },
             { time: "16:30", type: "move", title: "호텔 체크인", location: "Taipei Marriott Hotel", note: "전 일정 5성급 특급 호텔 숙박", image: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&q=80&w=800" },
@@ -127,7 +124,7 @@
           theme: "Return",
           events: [
             { time: "09:00", type: "move", title: "호텔 체크아웃 & 공항 이동", location: "Taipei -> Airport", note: "가이드 미팅 후 전용 버스로 이동", image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800" },
-            { time: "11:40", type: "move", title: "타이베이 출발", location: "TPE ✈️ ICN", note: "OZ 712 / KE 2022 (소중한 추억을 안고 귀국)", image: "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&q=80&w=800" },
+            { time: "11:40", type: "move", title: "타이베이 출발", location: "TPE ✈️ ICN", note: "소중한 추억을 안고 귀국 (항공편 확인 요망)", image: "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&q=80&w=800" },
             { time: "15:25", type: "home", title: "인천 도착", location: "Incheon Int'l Airport", note: "안전한 귀국, 수고하셨습니다!", image: "https://images.unsplash.com/photo-1542296332-2e44a99cfef9?auto=format&fit=crop&q=80&w=800" }
           ]
         }
@@ -136,7 +133,141 @@
 
     const chineseDays = ["", "第一天", "第二天", "第三天", "第四天"];
 
-    // --- 기상청 날씨 코드 번역기 ---
+    // --- [필터링 엔진] 사용자 정보에 맞춰 데이터 가공 ---
+    const getPersonalizedTripData = (userProfile) => {
+      const data = JSON.parse(JSON.stringify(BASE_TRIP_DATA));
+      
+      if(userProfile.flightOut) {
+        data.days[0].events[0].note = `${userProfile.flightOut} (기내식 포함)`;
+      }
+      if(userProfile.flightIn) {
+        data.days[3].events[1].note = `${userProfile.flightIn} (소중한 추억을 안고 귀국)`;
+      }
+
+      let day2Events = data.days[1].events;
+      if (userProfile.day2 === "티엔라이 온천 힐링") {
+        day2Events = day2Events.filter(e => !e.title.includes("고궁박물관"));
+        day2Events[0].title = "티엔라이 온천 힐링";
+      } else if (userProfile.day2 === "고궁박물관 역사투어") {
+        day2Events = day2Events.filter(e => !e.title.includes("티엔라이 온천"));
+        day2Events[0].title = "고궁박물관 역사투어";
+      } else if (userProfile.day2 === "자유일정") {
+        day2Events = [
+          { time: "09:00", type: "spot", title: "오전 자유일정", location: "타이베이 시내", note: "개별 자유 시간입니다. (중식 개별 해결)", image: "https://images.unsplash.com/photo-1595568153400-b610c384666f?auto=format&fit=crop&q=80&w=800" },
+          { time: "18:00", type: "star", title: "INCAR 만찬 행사", location: "Grand Ballroom", note: "★필수 참석★ 화합과 축하의 밤", image: "https://images.unsplash.com/photo-1519750157634-b6d493a0ea29?auto=format&fit=crop&q=80&w=800" }
+        ];
+      }
+      data.days[1].events = day2Events;
+
+      let day3Events = data.days[2].events;
+      if (userProfile.day3 === "자유일정") {
+        day3Events = [
+          { time: "09:00", type: "spot", title: "전일 자유일정", location: "대만 전역", note: "종일 자유일정입니다. 안전에 유의하여 즐거운 시간 보내세요.", image: "https://images.unsplash.com/photo-1558281050-0cb29aa87e83?auto=format&fit=crop&q=80&w=800" }
+        ];
+      }
+      data.days[2].events = day3Events;
+
+      return data;
+    };
+
+    // --- 로그인(사번 인증) 컴포넌트 ---
+    const LoginScreen = ({ onLogin, employeeDb }) => {
+      const [empId, setEmpId] = useState('');
+      const [error, setError] = useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        const user = employeeDb[empId.trim()];
+        if (user) {
+          onLogin(user);
+        } else {
+          setError('일치하는 사번이 없습니다. 다시 확인해주세요.');
+        }
+      };
+
+      return (
+        <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei" className="w-full h-full object-cover object-center brightness-50" />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent" />
+          </div>
+
+          <div className="relative z-10 w-full max-w-sm animate-fade-in-up">
+            <div className="text-center mb-10">
+              <h1 className="text-4xl font-playfair font-black text-white mb-2 drop-shadow-md">INCAR<br/>Spring Camp</h1>
+              <p className="text-[#FFD700] font-montserrat font-bold tracking-widest">2025 in Taiwan</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-xl p-8 rounded-[2rem] border border-white/20 shadow-2xl">
+              <h2 className="text-xl font-jua text-white mb-6 text-center flex items-center justify-center gap-2">
+                <UserCircle className="w-6 h-6" /> 맞춤 일정 확인하기
+              </h2>
+              
+              <div className="mb-6">
+                <label className="block text-xs font-montserrat font-bold text-gray-300 uppercase tracking-widest mb-2">Employee ID</label>
+                <input 
+                  type="text" 
+                  value={empId}
+                  onChange={(e) => { setEmpId(e.target.value); setError(''); }}
+                  placeholder="사번을 입력하세요 (예: 1611499)"
+                  className="w-full bg-black/30 border border-gray-600 rounded-xl px-4 py-3.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700] transition-all font-montserrat"
+                />
+                {error && <p className="text-red-400 text-xs font-jua mt-2 animate-pulse">{error}</p>}
+              </div>
+
+              <button type="submit" className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-gray-900 font-bold font-jua py-3.5 rounded-xl transition-all shadow-lg active:scale-95 text-lg">
+                내 일정 보기
+              </button>
+            </form>
+            <p className="text-center text-gray-400 text-xs font-jua mt-6 opacity-80">
+              QR 코드를 스캔하셨다면 자동으로 로그인됩니다.
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    // --- 개인화 정보 대시보드 컴포넌트 ---
+    const PersonalDashboard = ({ user, onLogout }) => (
+      <div className="w-full bg-white rounded-3xl p-5 shadow-sm border border-slate-200 mb-8 mt-4 relative overflow-hidden group">
+        <div className="absolute right-0 top-0 w-32 h-32 bg-blue-50 rounded-full opacity-50 -mr-10 -mt-10 pointer-events-none"></div>
+        
+        <div className="flex justify-between items-start mb-4 relative z-10">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-md font-montserrat tracking-wide">{user.dept}</span>
+              <span className="text-xs text-slate-400 font-montserrat">사번: {user.empId}</span>
+            </div>
+            <h2 className="text-2xl font-black text-slate-800 font-jua flex items-center gap-2">
+              {user.name} 님 <span className="text-base text-slate-500 font-medium">환영합니다!</span>
+            </h2>
+          </div>
+          <button onClick={onLogout} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors" title="로그아웃">
+            <LogOut className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 relative z-10 border-t border-slate-100 pt-4">
+          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 flex flex-col items-center justify-center text-center">
+            <div className="text-[10px] font-bold text-slate-400 font-montserrat mb-1">DAY 1 차량</div>
+            <Bus className={`w-5 h-5 mb-1 ${user.bus1 === '비탑승' ? 'text-slate-300' : 'text-blue-500'}`} />
+            <div className={`text-sm font-bold font-jua ${user.bus1 === '비탑승' ? 'text-slate-400' : 'text-slate-700'}`}>{user.bus1}</div>
+          </div>
+          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 flex flex-col items-center justify-center text-center">
+            <div className="text-[10px] font-bold text-slate-400 font-montserrat mb-1">DAY 2 차량</div>
+            <Bus className={`w-5 h-5 mb-1 ${user.bus2 === '비탑승' ? 'text-slate-300' : 'text-blue-500'}`} />
+            <div className={`text-sm font-bold font-jua ${user.bus2 === '비탑승' ? 'text-slate-400' : 'text-slate-700'}`}>{user.bus2}</div>
+          </div>
+          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 flex flex-col items-center justify-center text-center">
+            <div className="text-[10px] font-bold text-slate-400 font-montserrat mb-1">DAY 3 차량</div>
+            <Bus className={`w-5 h-5 mb-1 ${user.bus3 === '비탑승' ? 'text-slate-300' : 'text-blue-500'}`} />
+            <div className={`text-sm font-bold font-jua ${user.bus3 === '비탑승' ? 'text-slate-400' : 'text-slate-700'}`}>{user.bus3}</div>
+          </div>
+        </div>
+      </div>
+    );
+
+    // --- 헬퍼 함수 및 컴포넌트 유지 (날씨, 환율) ---
     const parseWeatherCode = (code) => {
       if (code === 0) return { desc: '맑음', type: 'sunny' };
       if ([1, 2].includes(code)) return { desc: '구름 조금', type: 'partly' };
@@ -171,20 +302,16 @@
       }
     };
 
-    // --- 실시간 날씨 및 환율 보드 ---
+    // 실시간 날씨 및 환율 보드
     const QuickInfoBoard = ({ onOpenWeather, onOpenExchange, liveWeather, liveExchange }) => {
       const currentTemp = liveWeather ? Math.round(liveWeather.current.temperature_2m) : 22;
       const currentHumid = liveWeather ? liveWeather.current.relative_humidity_2m : 65;
       const weatherInfo = liveWeather ? parseWeatherCode(liveWeather.current.weather_code) : { desc: '조회중...', type: 'partly' };
 
       return (
-        <div className="w-full flex flex-col md:flex-row gap-5 mb-4 mt-8 lg:mt-10">
-          <div 
-            onClick={onOpenWeather}
-            className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between group hover:shadow-md transition-all relative overflow-hidden cursor-pointer hover:-translate-y-1 ring-2 ring-transparent hover:ring-blue-100"
-          >
+        <div className="w-full flex flex-col md:flex-row gap-5 mb-4">
+          <div onClick={onOpenWeather} className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between group hover:shadow-md transition-all relative overflow-hidden cursor-pointer hover:-translate-y-1 ring-2 ring-transparent hover:ring-blue-100">
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
-            
             <div className="flex justify-between items-start w-full relative z-10 mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Taipei Weather</span>
@@ -197,7 +324,6 @@
                 주간 보기 <ChevronRight className="w-3 h-3" />
               </div>
             </div>
-
             <div className="flex justify-between items-end relative z-10 w-full">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center shadow-inner">
@@ -208,22 +334,11 @@
                   <span className="text-sm text-slate-500 font-medium font-jua">{weatherInfo.desc}</span>
                 </div>
               </div>
-
-              <div className="hidden sm:flex flex-col items-end gap-1 text-slate-500">
-                <div className="flex items-center gap-1.5 text-sm font-medium">
-                  <Droplets className="w-3.5 h-3.5 text-blue-400" /> 습도 {currentHumid}%
-                </div>
-                <p className="text-[11px] opacity-60 font-jua mt-0.5 tracking-wide">정보 제공: 오픈 메테오 기상청</p>
-              </div>
             </div>
           </div>
 
-          <div 
-            onClick={onOpenExchange}
-            className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between group hover:shadow-md transition-all relative overflow-hidden cursor-pointer hover:-translate-y-1 ring-2 ring-transparent hover:ring-yellow-100"
-          >
+          <div onClick={onOpenExchange} className="flex-1 bg-white rounded-3xl p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between group hover:shadow-md transition-all relative overflow-hidden cursor-pointer hover:-translate-y-1 ring-2 ring-transparent hover:ring-yellow-100">
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-yellow-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
-            
             <div className="flex justify-between items-start w-full relative z-10 mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-slate-400 font-montserrat uppercase tracking-wider">Exchange Rate</span>
@@ -232,12 +347,10 @@
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
               </div>
-              
               <div className="flex items-center gap-0.5 bg-yellow-50 text-yellow-600 px-2 py-1 rounded-md text-[11px] font-bold font-jua shadow-sm animate-pulse whitespace-nowrap">
                 계산기 열기 <ChevronRight className="w-3 h-3" />
               </div>
             </div>
-
             <div className="flex justify-between items-end relative z-10 w-full">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 bg-gradient-to-br from-yellow-100 to-orange-50 rounded-2xl flex items-center justify-center text-yellow-600 shadow-inner">
@@ -249,95 +362,325 @@
                   <span className="text-xs text-slate-400 font-jua border-l border-slate-200 pl-2 ml-1">1 TWD</span>
                 </div>
               </div>
-
-              <div className="hidden sm:flex flex-col items-end gap-1 text-slate-500">
-                <p className="text-xs opacity-70 mt-1">100 TWD = 약 <span className="font-bold">{Math.round(liveExchange * 100).toLocaleString()}</span>원</p>
-                <p className="text-[11px] opacity-60 font-jua mt-0.5 tracking-wide">기준: 실시간 시장 고시 환율</p>
-              </div>
             </div>
           </div>
         </div>
       );
     };
 
-    // --- NEW: 접었다 펴는 여행 필수 정보 아코디언 ---
-    const TravelToolsAccordion = ({ onOpenTips, onOpenPhrases, onOpenMap, onOpenEmergency }) => {
-      const [isExpanded, setIsExpanded] = useState(false);
-      const [time, setTime] = useState(new Date());
+    // --- 복구된 모달 컴포넌트들 시작 ---
+    const WeatherModal = ({ isOpen, onClose, liveWeather }) => {
+      const [selectedDateStr, setSelectedDateStr] = useState(null);
 
       useEffect(() => {
-        if (!isExpanded) return;
-        const timer = setInterval(() => setTime(new Date()), 1000);
-        return () => clearInterval(timer);
-      }, [isExpanded]);
+        if (!isOpen) setSelectedDateStr(null);
+      }, [isOpen]);
 
-      const taipeiTime = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Taipei', hour: '2-digit', minute:'2-digit', hour12: false }).format(time);
-      const seoulTime = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', hour: '2-digit', minute:'2-digit', hour12: false }).format(time);
+      if (!isOpen) return null;
+
+      const getDayName = (dateStr) => {
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        return days[new Date(dateStr).getDay()];
+      };
+
+      let weeklyData = [];
+      if (liveWeather && liveWeather.daily) {
+        weeklyData = liveWeather.daily.time.map((dateStr, i) => {
+          const wmoCode = liveWeather.daily.weather_code[i];
+          const { desc, type } = parseWeatherCode(wmoCode);
+          const isToday = i === 0;
+          const tripDates = ["2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14"];
+          const isTripDay = tripDates.includes(dateStr);
+
+          return {
+            rawDate: dateStr,
+            date: dateStr.slice(5).replace('-', '.'),
+            day: isToday ? '오늘' : getDayName(dateStr),
+            type,
+            high: Math.round(liveWeather.daily.temperature_2m_max[i]),
+            low: Math.round(liveWeather.daily.temperature_2m_min[i]),
+            desc,
+            isTripDay,
+            isToday
+          };
+        });
+      }
+
+      let hourlyData = [];
+      let selectedDayInfo = null;
+      if (selectedDateStr && liveWeather && liveWeather.hourly) {
+        selectedDayInfo = weeklyData.find(d => d.rawDate === selectedDateStr);
+        liveWeather.hourly.time.forEach((timeStr, idx) => {
+          if (timeStr.startsWith(selectedDateStr)) {
+            const wmoCode = liveWeather.hourly.weather_code[idx];
+            const temp = Math.round(liveWeather.hourly.temperature_2m[idx]);
+            const hour = timeStr.split('T')[1];
+            hourlyData.push({ hour, temp, ...parseWeatherCode(wmoCode) });
+          }
+        });
+      }
 
       return (
-        <div className="w-full mb-8 relative z-20">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className={`w-full flex items-center justify-between p-4 md:p-5 rounded-3xl transition-all duration-300 shadow-sm border ${
-              isExpanded ? 'bg-[#1C1514] text-white border-[#1C1514]' : 'bg-white hover:bg-slate-50 border-slate-200'
-            }`}
-          >
-            <div className="flex items-center gap-3.5">
-              <div className={`p-2 rounded-xl transition-colors ${isExpanded ? 'bg-white/10 text-[#FFD700]' : 'bg-slate-100 text-slate-600'}`}>
-                <Plug className="w-5 h-5" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="bg-white rounded-3xl w-full max-w-md relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            {!selectedDateStr ? (
+              <div className="bg-blue-50/50 p-5 border-b border-slate-100 flex justify-between items-center">
+                <div>
+                  <h3 className="font-montserrat font-black text-xl text-slate-800 tracking-tight flex items-center gap-2">
+                    Taipei Live Forecast <span className="animate-pulse h-2 w-2 bg-emerald-500 rounded-full"></span>
+                  </h3>
+                  <p className="text-sm font-jua text-slate-500">실시간 향후 7일 날씨 예보</p>
+                </div>
+                <button onClick={onClose} className="p-2 bg-white rounded-full text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors shadow-sm border border-slate-100">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <div className="text-left">
-                <span className={`block font-montserrat font-black text-lg ${isExpanded ? 'text-white' : 'text-slate-800'}`}>Travel Tools</span>
-                <span className={`block text-[11px] font-jua mt-0.5 ${isExpanded ? 'text-slate-300' : 'text-slate-500'}`}>여행 필수 정보 (시계, 회화, 지도, 비상연락)</span>
+            ) : (
+              <div className="bg-blue-600 p-5 border-b border-blue-700 flex justify-between items-center text-white shadow-inner">
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setSelectedDateStr(null)} className="p-1.5 bg-blue-700/50 rounded-full text-blue-100 hover:text-white hover:bg-blue-800 transition-colors">
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <div>
+                    <h3 className="font-montserrat font-black text-xl tracking-tight flex items-center gap-2">
+                      {selectedDayInfo?.date} ({selectedDayInfo?.day})
+                    </h3>
+                    <p className="text-sm font-jua text-blue-200">시간대별 상세 날씨</p>
+                  </div>
+                </div>
+                <button onClick={onClose} className="p-2 bg-blue-700/50 rounded-full text-blue-100 hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-            </div>
-            <div className={`p-2.5 rounded-full transition-colors ${isExpanded ? 'bg-white/10 text-[#FFD700]' : 'bg-slate-100 text-slate-400'}`}>
-              <ChevronDownIcon className={`w-5 h-5 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`} />
-            </div>
-          </button>
-
-          <div className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}>
-            <div className="accordion-content-inner">
-              <div className="pt-3 pb-1">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {/* 실시간 시계 */}
-                  <div className="col-span-2 md:col-span-4 flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-2 text-blue-600">
-                      <Clock className="w-5 h-5" />
-                      <span className="font-bold font-jua text-slate-700">현재 시간</span>
+            )}
+            
+            <div className="p-3 max-h-[60vh] overflow-y-auto">
+              {!selectedDateStr ? (
+                weeklyData.length > 0 ? weeklyData.map((day, idx) => (
+                  <div 
+                    key={idx} 
+                    onClick={() => setSelectedDateStr(day.rawDate)}
+                    className={`flex items-center justify-between p-3 my-1 rounded-2xl cursor-pointer transition-colors group ${day.isToday ? 'bg-blue-50/80 border border-blue-200' : 'hover:bg-slate-50 border border-transparent'}`}
+                  >
+                    <div className="flex items-center gap-3 w-[40%] relative">
+                      <span className={`font-montserrat font-bold text-base ${day.isToday ? 'text-blue-900' : 'text-slate-600 group-hover:text-blue-600'}`}>{day.date}</span>
+                      <span className={`font-jua text-sm ${day.isToday ? 'text-blue-700' : 'text-slate-400'}`}>{day.day}</span>
+                      {day.isToday && (
+                        <span className="text-[10px] font-bold text-white bg-blue-500 px-1.5 py-0.5 rounded shadow-sm tracking-wide">TODAY</span>
+                      )}
                     </div>
-                    <div className="flex items-baseline gap-3">
-                      <span className="font-montserrat font-black text-xl text-slate-800">대만 {taipeiTime}</span>
-                      <span className="font-jua text-sm text-slate-400 border-l border-slate-200 pl-3">한국 {seoulTime}</span>
+                    <div className="flex items-center justify-center gap-2 w-[30%]">
+                      {getWeatherIcon(day.type)}
+                      <span className="text-xs font-medium text-slate-600 w-12 text-center">{day.desc}</span>
+                    </div>
+                    <div className="flex items-center justify-end gap-1.5 w-[30%] font-montserrat text-sm">
+                      <span className="text-blue-400 font-medium">{day.low}°</span>
+                      <span className="w-2 h-px bg-slate-300"></span>
+                      <span className="text-orange-500 font-bold">{day.high}°</span>
+                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors ml-1" />
                     </div>
                   </div>
+                )) : (
+                  <div className="p-10 text-center text-slate-400 text-sm font-medium">데이터를 불러오는 중입니다...</div>
+                )
+              ) : (
+                <div className="py-2">
+                  <div className="flex text-xs font-bold text-slate-400 font-montserrat uppercase px-4 mb-2">
+                    <div className="w-1/3">Time</div>
+                    <div className="w-1/3 text-center">Weather</div>
+                    <div className="w-1/3 text-right">Temp</div>
+                  </div>
+                  {hourlyData.length > 0 ? hourlyData.map((hourData, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors rounded-xl">
+                      <div className="w-1/3 font-montserrat font-bold text-slate-700">
+                        {hourData.hour}
+                      </div>
+                      <div className="w-1/3 flex items-center justify-center gap-2">
+                        {getWeatherIcon(hourData.type, "w-4 h-4")}
+                        <span className="text-xs font-medium text-slate-500">{hourData.desc}</span>
+                      </div>
+                      <div className="w-1/3 text-right font-montserrat font-black text-slate-800">
+                        {hourData.temp}°C
+                      </div>
+                    </div>
+                  )) : (
+                    <div className="p-10 text-center text-slate-400 text-sm font-medium">상세 데이터를 불러올 수 없습니다.</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    };
 
-                  {/* 도구 버튼 4종 */}
-                  <button onClick={onOpenTips} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-yellow-50 hover:border-yellow-300 transition-colors group active:scale-95">
-                    <Plug className="w-7 h-7 text-yellow-500 group-hover:scale-110 transition-transform" />
-                    <span className="font-bold text-sm font-jua text-slate-700">여행 팁</span>
+    const ExchangeModal = ({ isOpen, onClose, liveExchange }) => {
+      const [twdVal, setTwdVal] = useState("100");
+      const [krwVal, setKrwVal] = useState("");
+      const [customRate, setCustomRate] = useState("");
+
+      useEffect(() => {
+        if (isOpen) {
+          const defaultRate = liveExchange || "42.50";
+          if (!customRate) {
+            setCustomRate(defaultRate);
+            setKrwVal(Math.round(100 * parseFloat(defaultRate)).toString());
+          }
+        }
+      }, [isOpen, liveExchange]);
+
+      if (!isOpen) return null;
+
+      const rateToUse = parseFloat(customRate) || 42.50;
+
+      const parseNum = (str) => str.toString().replace(/,/g, '');
+      const formatNum = (str) => {
+        if (!str) return "";
+        const parts = str.toString().split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join('.');
+      };
+
+      const handleTwdChange = (e) => {
+        const rawVal = parseNum(e.target.value);
+        if (isNaN(rawVal)) return;
+        setTwdVal(rawVal);
+        if (rawVal === '') setKrwVal('');
+        else setKrwVal(Math.round(Number(rawVal) * rateToUse).toString());
+      };
+
+      const handleKrwChange = (e) => {
+        const rawVal = parseNum(e.target.value);
+        if (isNaN(rawVal)) return;
+        setKrwVal(rawVal);
+        if (rawVal === '') setTwdVal('');
+        else setTwdVal((Number(rawVal) / rateToUse).toFixed(2).replace(/\.00$/, '')); 
+      };
+
+      const handleRateInput = (e) => {
+        const val = e.target.value;
+        setCustomRate(val);
+        const rate = parseFloat(val) || 0;
+        if (rate > 0 && twdVal) {
+           setKrwVal(Math.round(Number(parseNum(twdVal)) * rate).toString());
+        }
+      };
+
+      const adjustRate = (delta) => {
+        const current = parseFloat(customRate) || 0;
+        const next = Math.max(0, current + delta).toFixed(2);
+        setCustomRate(next);
+        if (twdVal) {
+          setKrwVal(Math.round(Number(parseNum(twdVal)) * parseFloat(next)).toString());
+        }
+      };
+
+      const handlePreset = (amount) => {
+        const currentTwd = Number(parseNum(twdVal)) || 0;
+        const newTwd = currentTwd + amount;
+        setTwdVal(newTwd.toString());
+        setKrwVal(Math.round(newTwd * rateToUse).toString());
+      };
+
+      return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+          <div className="bg-white rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-yellow-50/50 p-5 border-b border-yellow-100/50 flex justify-between items-center">
+              <div>
+                <h3 className="font-montserrat font-black text-xl text-slate-800 tracking-tight flex items-center gap-2">
+                  Currency Calc <Calculator className="w-5 h-5 text-yellow-600" />
+                </h3>
+                <p className="text-sm font-jua text-slate-500">자유 양방향 환율 계산기</p>
+              </div>
+              <button onClick={onClose} className="p-2 bg-white rounded-full text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors shadow-sm border border-slate-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 pb-4">
+              <div className="bg-emerald-50/50 rounded-2xl p-3 mb-5 border border-emerald-100 flex items-center justify-between">
+                <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest pl-1">적용 환율</span>
+                <div className="flex items-center gap-2 text-sm font-bold text-slate-600 font-montserrat">
+                  <span>1 TWD =</span>
+                  <div className="flex items-center bg-white border border-emerald-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-400 shadow-sm transition-all">
+                    <input 
+                      type="number" 
+                      step="0.1"
+                      value={customRate} 
+                      onChange={handleRateInput}
+                      className="w-16 py-1.5 pl-2 text-right font-black text-emerald-600 outline-none bg-transparent"
+                    />
+                    <div className="flex flex-col border-l border-emerald-100">
+                      <button onClick={() => adjustRate(0.1)} className="px-1.5 py-0.5 hover:bg-emerald-100 text-emerald-600 active:bg-emerald-200 transition-colors"><ChevronUp className="w-3 h-3" /></button>
+                      <div className="w-full h-px bg-emerald-100"></div>
+                      <button onClick={() => adjustRate(-0.1)} className="px-1.5 py-0.5 hover:bg-emerald-100 text-emerald-600 active:bg-emerald-200 transition-colors"><ChevronDown className="w-3 h-3" /></button>
+                    </div>
+                  </div>
+                  <span className="text-xs">KRW</span>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 rounded-2xl p-4 mb-3 border border-slate-200 relative shadow-inner focus-within:ring-2 focus-within:ring-blue-200 transition-all">
+                <label className="text-xs font-bold text-slate-400 font-montserrat uppercase tracking-widest block mb-2">대만 달러 (TWD)</label>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-black text-slate-300">$</span>
+                  <input 
+                    type="text" 
+                    inputMode="decimal"
+                    value={formatNum(twdVal)}
+                    onChange={handleTwdChange}
+                    className="w-full bg-transparent text-right text-4xl font-black font-montserrat text-blue-600 focus:outline-none"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                {[50, 100, 500, 1000].map((amount) => (
+                  <button 
+                    key={amount}
+                    onClick={() => handlePreset(amount)}
+                    className="bg-white border border-slate-200 py-2.5 rounded-xl text-sm font-black font-montserrat text-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all shadow-sm active:scale-95 active:bg-blue-100"
+                  >
+                    +{amount}
                   </button>
-                  <button onClick={onOpenPhrases} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-green-50 hover:border-green-300 transition-colors group active:scale-95">
-                    <MessageCircle className="w-7 h-7 text-green-500 group-hover:scale-110 transition-transform" />
-                    <span className="font-bold text-sm font-jua text-slate-700">여행 회화</span>
-                  </button>
-                  <button onClick={onOpenMap} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-blue-50 hover:border-blue-300 transition-colors group active:scale-95">
-                    <Map className="w-7 h-7 text-blue-500 group-hover:scale-110 transition-transform" />
-                    <span className="font-bold text-sm font-jua text-slate-700">지도 검색</span>
-                  </button>
-                  <button onClick={onOpenEmergency} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-red-50 hover:border-red-300 transition-colors group active:scale-95">
-                    <Phone className="w-7 h-7 text-red-500 group-hover:scale-110 transition-transform" />
-                    <span className="font-bold text-sm font-jua text-slate-700">긴급 연락</span>
-                  </button>
+                ))}
+              </div>
+
+              <div className="flex justify-center -my-3 relative z-10 pointer-events-none">
+                <div className="bg-white p-1.5 rounded-full border border-slate-200 shadow-sm text-slate-300">
+                  <ArrowDownUp className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div className="bg-slate-800 rounded-2xl p-4 mt-1 border border-slate-700 relative overflow-hidden shadow-lg focus-within:ring-2 focus-within:ring-yellow-500/50 transition-all">
+                <div className="absolute -right-4 -bottom-4 opacity-10 text-white pointer-events-none">
+                  <Coins className="w-24 h-24" />
+                </div>
+                <label className="text-xs font-bold text-slate-400 font-montserrat uppercase tracking-widest block mb-2 relative z-10">한국 원 (KRW)</label>
+                <div className="flex items-center justify-between relative z-10">
+                  <span className="text-2xl font-black text-slate-500">₩</span>
+                  <input 
+                    type="text"
+                    inputMode="numeric"
+                    value={formatNum(krwVal)}
+                    onChange={handleKrwChange}
+                    className="w-full bg-transparent text-right text-4xl font-black font-montserrat text-yellow-400 focus:outline-none"
+                    placeholder="0"
+                  />
                 </div>
               </div>
             </div>
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex flex-col justify-center items-center gap-1">
+              <p className="text-[11px] text-slate-500 font-medium font-jua">양쪽 칸 모두 자유롭게 숫자를 입력할 수 있습니다.</p>
+            </div>
           </div>
         </div>
       );
     };
 
-    // --- MODALS ---
     const TipsModal = ({ isOpen, onClose }) => {
       if (!isOpen) return null;
       return (
@@ -386,14 +729,8 @@
           icon: "🥟",
           phrases: [
             { ko: "고수 빼주세요", tw: "不要香菜", pron: "부야오 샹차이" },
-            { ko: "고수 많이 주세요", tw: "多加香菜", pron: "뚜어 쟈 샹차이" },
             { ko: "포장해 주세요", tw: "我要外帶", pron: "워 야오 와이따이" },
-            { ko: "이것 주세요", tw: "我要這個", pron: "워 야오 쩌거" },
-            { ko: "많이 주세요 (양을)", tw: "多給一點", pron: "뚜어 게이 이디엔" },
-            { ko: "덜 달게 해주세요", tw: "微糖", pron: "웨이 탕" },
-            { ko: "달게 해주세요", tw: "多糖", pron: "뚜어 탕" },
-            { ko: "얼음 적게 해주세요", tw: "少冰", pron: "샤오 빙" },
-            { ko: "얼음 많이 해주세요", tw: "多冰", pron: "뚜어 빙" }
+            { ko: "얼음 적게 해주세요", tw: "少冰", pron: "샤오 빙" }
           ]
         },
         {
@@ -403,29 +740,7 @@
           phrases: [
             { ko: "얼마인가요?", tw: "多少錢？", pron: "뚜어샤오 치엔?" },
             { ko: "영수증 주세요", tw: "請給我收據", pron: "칭 게이 워 쇼우쥐" },
-            { ko: "봉투 필요 없어요", tw: "不用袋子", pron: "부용 따이쯔" },
             { ko: "조금 깎아주세요", tw: "算便宜一點吧", pron: "쑤완 피엔이 이디엔 바" }
-          ]
-        },
-        {
-          id: 'transport',
-          name: "교통 / 길찾기",
-          icon: "🚇",
-          phrases: [
-            { ko: "화장실이 어디인가요?", tw: "洗手間在哪裡？", pron: "시쇼우지엔 짜이 나리?" },
-            { ko: "타이베이역 가주세요", tw: "請到台北車站", pron: "칭 따오 타이베이 처짠" },
-            { ko: "여기서 내릴게요", tw: "在這裡下車", pron: "짜이 쩌리 시아처" }
-          ]
-        },
-        {
-          id: 'basic',
-          name: "기본 인사",
-          icon: "👋",
-          phrases: [
-            { ko: "안녕하세요", tw: "你好", pron: "니하오" },
-            { ko: "감사합니다", tw: "謝謝", pron: "씨에시에" },
-            { ko: "죄송합니다", tw: "對不起", pron: "뚜이부치" },
-            { ko: "괜찮아요 (상관없어요)", tw: "沒關係", pron: "메이꽌시" }
           ]
         }
       ];
@@ -439,9 +754,7 @@
           document.execCommand('copy');
           setCopiedIdx(idxKey);
           setTimeout(() => setCopiedIdx(null), 2000);
-        } catch (err) {
-          console.error('Copy failed', err);
-        }
+        } catch (err) {}
         document.body.removeChild(textArea);
       };
 
@@ -599,325 +912,74 @@
       );
     };
 
-    const WeatherModal = ({ isOpen, onClose, liveWeather }) => {
-      const [selectedDateStr, setSelectedDateStr] = useState(null);
+    // Travel Tools 아코디언 컴포넌트 추가
+    const TravelToolsAccordion = ({ onOpenTips, onOpenPhrases, onOpenMap, onOpenEmergency }) => {
+      const [isExpanded, setIsExpanded] = useState(false);
+      const [time, setTime] = useState(new Date());
 
       useEffect(() => {
-        if (!isOpen) setSelectedDateStr(null);
-      }, [isOpen]);
+        if (!isExpanded) return;
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+      }, [isExpanded]);
 
-      if (!isOpen) return null;
-
-      const getDayName = (dateStr) => {
-        const days = ['일', '월', '화', '수', '목', '금', '토'];
-        return days[new Date(dateStr).getDay()];
-      };
-
-      let weeklyData = [];
-      if (liveWeather && liveWeather.daily) {
-        weeklyData = liveWeather.daily.time.map((dateStr, i) => {
-          const wmoCode = liveWeather.daily.weather_code[i];
-          const { desc, type } = parseWeatherCode(wmoCode);
-          const isToday = i === 0;
-          const tripDates = ["2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14"];
-          const isTripDay = tripDates.includes(dateStr);
-
-          return {
-            rawDate: dateStr,
-            date: dateStr.slice(5).replace('-', '.'),
-            day: isToday ? '오늘' : getDayName(dateStr),
-            type,
-            high: Math.round(liveWeather.daily.temperature_2m_max[i]),
-            low: Math.round(liveWeather.daily.temperature_2m_min[i]),
-            desc,
-            isTripDay,
-            isToday
-          };
-        });
-      }
-
-      let hourlyData = [];
-      let selectedDayInfo = null;
-      if (selectedDateStr && liveWeather && liveWeather.hourly) {
-        selectedDayInfo = weeklyData.find(d => d.rawDate === selectedDateStr);
-        liveWeather.hourly.time.forEach((timeStr, idx) => {
-          if (timeStr.startsWith(selectedDateStr)) {
-            const wmoCode = liveWeather.hourly.weather_code[idx];
-            const temp = Math.round(liveWeather.hourly.temperature_2m[idx]);
-            const hour = timeStr.split('T')[1];
-            hourlyData.push({ hour, temp, ...parseWeatherCode(wmoCode) });
-          }
-        });
-      }
+      const taipeiTime = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Taipei', hour: '2-digit', minute:'2-digit', hour12: false }).format(time);
+      const seoulTime = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', hour: '2-digit', minute:'2-digit', hour12: false }).format(time);
 
       return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-          <div className="bg-white rounded-3xl w-full max-w-md relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            {!selectedDateStr ? (
-              <div className="bg-blue-50/50 p-5 border-b border-slate-100 flex justify-between items-center">
-                <div>
-                  <h3 className="font-montserrat font-black text-xl text-slate-800 tracking-tight flex items-center gap-2">
-                    Taipei Live Forecast <span className="animate-pulse h-2 w-2 bg-emerald-500 rounded-full"></span>
-                  </h3>
-                  <p className="text-sm font-jua text-slate-500">실시간 향후 7일 날씨 예보</p>
-                </div>
-                <button onClick={onClose} className="p-2 bg-white rounded-full text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors shadow-sm border border-slate-100">
-                  <X className="w-5 h-5" />
-                </button>
+        <div className="w-full mb-8 relative z-20 mt-4">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`w-full flex items-center justify-between p-4 md:p-5 rounded-3xl transition-all duration-300 shadow-sm border ${
+              isExpanded ? 'bg-[#1C1514] text-white border-[#1C1514]' : 'bg-white hover:bg-slate-50 border-slate-200'
+            }`}
+          >
+            <div className="flex items-center gap-3.5">
+              <div className={`p-2 rounded-xl transition-colors ${isExpanded ? 'bg-white/10 text-[#FFD700]' : 'bg-slate-100 text-slate-600'}`}>
+                <Plug className="w-5 h-5" />
               </div>
-            ) : (
-              <div className="bg-blue-600 p-5 border-b border-blue-700 flex justify-between items-center text-white shadow-inner">
-                <div className="flex items-center gap-3">
-                  <button onClick={() => setSelectedDateStr(null)} className="p-1.5 bg-blue-700/50 rounded-full text-blue-100 hover:text-white hover:bg-blue-800 transition-colors">
-                    <ChevronLeft className="w-5 h-5" />
+              <div className="text-left">
+                <span className={`block font-montserrat font-black text-lg ${isExpanded ? 'text-white' : 'text-slate-800'}`}>Travel Tools</span>
+                <span className={`block text-[11px] font-jua mt-0.5 ${isExpanded ? 'text-slate-300' : 'text-slate-500'}`}>여행 필수 정보 (시계, 회화, 지도, 비상연락)</span>
+              </div>
+            </div>
+            <div className={`p-2.5 rounded-full transition-colors ${isExpanded ? 'bg-white/10 text-[#FFD700]' : 'bg-slate-100 text-slate-400'}`}>
+              <ChevronDownIcon className={`w-5 h-5 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`} />
+            </div>
+          </button>
+
+          <div className={`accordion-grid ${isExpanded ? 'expanded' : ''}`}>
+            <div className="accordion-content-inner">
+              <div className="pt-3 pb-1">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="col-span-2 md:col-span-4 flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-2 text-blue-600">
+                      <Clock className="w-5 h-5" />
+                      <span className="font-bold font-jua text-slate-700">현재 시간</span>
+                    </div>
+                    <div className="flex items-baseline gap-3">
+                      <span className="font-montserrat font-black text-xl text-slate-800">대만 {taipeiTime}</span>
+                      <span className="font-jua text-sm text-slate-400 border-l border-slate-200 pl-3">한국 {seoulTime}</span>
+                    </div>
+                  </div>
+                  <button onClick={onOpenTips} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-yellow-50 hover:border-yellow-300 transition-colors group active:scale-95">
+                    <Plug className="w-7 h-7 text-yellow-500 group-hover:scale-110 transition-transform" />
+                    <span className="font-bold text-sm font-jua text-slate-700">여행 팁</span>
                   </button>
-                  <div>
-                    <h3 className="font-montserrat font-black text-xl tracking-tight flex items-center gap-2">
-                      {selectedDayInfo?.date} ({selectedDayInfo?.day})
-                    </h3>
-                    <p className="text-sm font-jua text-blue-200">시간대별 상세 날씨</p>
-                  </div>
-                </div>
-                <button onClick={onClose} className="p-2 bg-blue-700/50 rounded-full text-blue-100 hover:text-white transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            )}
-            
-            <div className="p-3 max-h-[60vh] overflow-y-auto">
-              {!selectedDateStr ? (
-                weeklyData.length > 0 ? weeklyData.map((day, idx) => (
-                  <div 
-                    key={idx} 
-                    onClick={() => setSelectedDateStr(day.rawDate)}
-                    className={`flex items-center justify-between p-3 my-1 rounded-2xl cursor-pointer transition-colors group ${day.isToday ? 'bg-blue-50/80 border border-blue-200' : 'hover:bg-slate-50 border border-transparent'}`}
-                  >
-                    <div className="flex items-center gap-3 w-[40%] relative">
-                      <span className={`font-montserrat font-bold text-base ${day.isToday ? 'text-blue-900' : 'text-slate-600 group-hover:text-blue-600'}`}>{day.date}</span>
-                      <span className={`font-jua text-sm ${day.isToday ? 'text-blue-700' : 'text-slate-400'}`}>{day.day}</span>
-                      {day.isToday && (
-                        <span className="text-[10px] font-bold text-white bg-blue-500 px-1.5 py-0.5 rounded shadow-sm tracking-wide">TODAY</span>
-                      )}
-                      {day.isTripDay && !day.isToday && (
-                        <span className="text-[10px] font-bold text-white bg-orange-500 px-1.5 py-0.5 rounded shadow-sm tracking-wide">일정</span>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-center gap-2 w-[30%]">
-                      {getWeatherIcon(day.type)}
-                      <span className="text-xs font-medium text-slate-600 w-12 text-center">{day.desc}</span>
-                    </div>
-                    <div className="flex items-center justify-end gap-1.5 w-[30%] font-montserrat text-sm">
-                      <span className="text-blue-400 font-medium">{day.low}°</span>
-                      <span className="w-2 h-px bg-slate-300"></span>
-                      <span className="text-orange-500 font-bold">{day.high}°</span>
-                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors ml-1" />
-                    </div>
-                  </div>
-                )) : (
-                  <div className="p-10 text-center text-slate-400 text-sm font-medium">데이터를 불러오는 중입니다...</div>
-                )
-              ) : (
-                <div className="py-2">
-                  <div className="flex text-xs font-bold text-slate-400 font-montserrat uppercase px-4 mb-2">
-                    <div className="w-1/3">Time</div>
-                    <div className="w-1/3 text-center">Weather</div>
-                    <div className="w-1/3 text-right">Temp</div>
-                  </div>
-                  {hourlyData.length > 0 ? hourlyData.map((hourData, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors rounded-xl">
-                      <div className="w-1/3 font-montserrat font-bold text-slate-700">
-                        {hourData.hour}
-                      </div>
-                      <div className="w-1/3 flex items-center justify-center gap-2">
-                        {getWeatherIcon(hourData.type, "w-4 h-4")}
-                        <span className="text-xs font-medium text-slate-500">{hourData.desc}</span>
-                      </div>
-                      <div className="w-1/3 text-right font-montserrat font-black text-slate-800">
-                        {hourData.temp}°C
-                      </div>
-                    </div>
-                  )) : (
-                    <div className="p-10 text-center text-slate-400 text-sm font-medium">상세 데이터를 불러올 수 없습니다.</div>
-                  )}
-                </div>
-              )}
-            </div>
-            
-            {!selectedDateStr && (
-              <div className="p-4 bg-slate-50 text-center border-t border-slate-100 flex flex-col gap-1 items-center">
-                <p className="text-xs text-slate-500 font-medium">대만은 비가 자주 오니 <span className="font-bold text-blue-500">작은 우산</span>을 꼭 챙겨주세요 ☔️</p>
-                <p className="text-[10px] text-slate-400 font-jua mt-1 tracking-wide">데이터 제공: 글로벌 기상 정보 (Open-Meteo)</p>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    };
-
-    const ExchangeModal = ({ isOpen, onClose, liveExchange }) => {
-      const [twdVal, setTwdVal] = useState("100");
-      const [krwVal, setKrwVal] = useState("");
-      
-      const [customRate, setCustomRate] = useState("");
-
-      useEffect(() => {
-        if (isOpen) {
-          const defaultRate = liveExchange || "42.50";
-          if (!customRate) {
-            setCustomRate(defaultRate);
-            setKrwVal(Math.round(100 * parseFloat(defaultRate)).toString());
-          }
-        }
-      }, [isOpen, liveExchange]);
-
-      if (!isOpen) return null;
-
-      const rateToUse = parseFloat(customRate) || 42.50;
-
-      const parseNum = (str) => str.toString().replace(/,/g, '');
-      const formatNum = (str) => {
-        if (!str) return "";
-        const parts = str.toString().split('.');
-        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        return parts.join('.');
-      };
-
-      const handleTwdChange = (e) => {
-        const rawVal = parseNum(e.target.value);
-        if (isNaN(rawVal)) return;
-        setTwdVal(rawVal);
-        if (rawVal === '') setKrwVal('');
-        else setKrwVal(Math.round(Number(rawVal) * rateToUse).toString());
-      };
-
-      const handleKrwChange = (e) => {
-        const rawVal = parseNum(e.target.value);
-        if (isNaN(rawVal)) return;
-        setKrwVal(rawVal);
-        if (rawVal === '') setTwdVal('');
-        else setTwdVal((Number(rawVal) / rateToUse).toFixed(2).replace(/\.00$/, '')); 
-      };
-
-      const handleRateInput = (e) => {
-        const val = e.target.value;
-        setCustomRate(val);
-        const rate = parseFloat(val) || 0;
-        if (rate > 0 && twdVal) {
-           setKrwVal(Math.round(Number(parseNum(twdVal)) * rate).toString());
-        }
-      };
-
-      const adjustRate = (delta) => {
-        const current = parseFloat(customRate) || 0;
-        const next = Math.max(0, current + delta).toFixed(2);
-        setCustomRate(next);
-        if (twdVal) {
-          setKrwVal(Math.round(Number(parseNum(twdVal)) * parseFloat(next)).toString());
-        }
-      };
-
-      const handlePreset = (amount) => {
-        const currentTwd = Number(parseNum(twdVal)) || 0;
-        const newTwd = currentTwd + amount;
-        setTwdVal(newTwd.toString());
-        setKrwVal(Math.round(newTwd * rateToUse).toString());
-      };
-
-      return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-          <div className="bg-white rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="bg-yellow-50/50 p-5 border-b border-yellow-100/50 flex justify-between items-center">
-              <div>
-                <h3 className="font-montserrat font-black text-xl text-slate-800 tracking-tight flex items-center gap-2">
-                  Currency Calc <Calculator className="w-5 h-5 text-yellow-600" />
-                </h3>
-                <p className="text-sm font-jua text-slate-500">자유 양방향 환율 계산기</p>
-              </div>
-              <button onClick={onClose} className="p-2 bg-white rounded-full text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors shadow-sm border border-slate-100">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="p-6 pb-4">
-              <div className="bg-emerald-50/50 rounded-2xl p-3 mb-5 border border-emerald-100 flex items-center justify-between">
-                <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest pl-1">적용 환율</span>
-                <div className="flex items-center gap-2 text-sm font-bold text-slate-600 font-montserrat">
-                  <span>1 TWD =</span>
-                  <div className="flex items-center bg-white border border-emerald-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-400 shadow-sm transition-all">
-                    <input 
-                      type="number" 
-                      step="0.1"
-                      value={customRate} 
-                      onChange={handleRateInput}
-                      className="w-16 py-1.5 pl-2 text-right font-black text-emerald-600 outline-none bg-transparent"
-                    />
-                    <div className="flex flex-col border-l border-emerald-100">
-                      <button onClick={() => adjustRate(0.1)} className="px-1.5 py-0.5 hover:bg-emerald-100 text-emerald-600 active:bg-emerald-200 transition-colors"><ChevronUp className="w-3 h-3" /></button>
-                      <div className="w-full h-px bg-emerald-100"></div>
-                      <button onClick={() => adjustRate(-0.1)} className="px-1.5 py-0.5 hover:bg-emerald-100 text-emerald-600 active:bg-emerald-200 transition-colors"><ChevronDown className="w-3 h-3" /></button>
-                    </div>
-                  </div>
-                  <span className="text-xs">KRW</span>
-                </div>
-              </div>
-
-              <div className="bg-slate-50 rounded-2xl p-4 mb-3 border border-slate-200 relative shadow-inner focus-within:ring-2 focus-within:ring-blue-200 transition-all">
-                <label className="text-xs font-bold text-slate-400 font-montserrat uppercase tracking-widest block mb-2">대만 달러 (TWD)</label>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-black text-slate-300">$</span>
-                  <input 
-                    type="text" 
-                    inputMode="decimal"
-                    value={formatNum(twdVal)}
-                    onChange={handleTwdChange}
-                    className="w-full bg-transparent text-right text-4xl font-black font-montserrat text-blue-600 focus:outline-none"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                {[50, 100, 500, 1000].map((amount) => (
-                  <button 
-                    key={amount}
-                    onClick={() => handlePreset(amount)}
-                    className="bg-white border border-slate-200 py-2.5 rounded-xl text-sm font-black font-montserrat text-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-all shadow-sm active:scale-95 active:bg-blue-100"
-                  >
-                    +{amount}
+                  <button onClick={onOpenPhrases} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-green-50 hover:border-green-300 transition-colors group active:scale-95">
+                    <MessageCircle className="w-7 h-7 text-green-500 group-hover:scale-110 transition-transform" />
+                    <span className="font-bold text-sm font-jua text-slate-700">여행 회화</span>
                   </button>
-                ))}
-              </div>
-
-              <div className="flex justify-center -my-3 relative z-10 pointer-events-none">
-                <div className="bg-white p-1.5 rounded-full border border-slate-200 shadow-sm text-slate-300">
-                  <ArrowDownUp className="w-4 h-4" />
+                  <button onClick={onOpenMap} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-blue-50 hover:border-blue-300 transition-colors group active:scale-95">
+                    <Map className="w-7 h-7 text-blue-500 group-hover:scale-110 transition-transform" />
+                    <span className="font-bold text-sm font-jua text-slate-700">지도 검색</span>
+                  </button>
+                  <button onClick={onOpenEmergency} className="flex flex-col items-center justify-center gap-2.5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:bg-red-50 hover:border-red-300 transition-colors group active:scale-95">
+                    <Phone className="w-7 h-7 text-red-500 group-hover:scale-110 transition-transform" />
+                    <span className="font-bold text-sm font-jua text-slate-700">긴급 연락</span>
+                  </button>
                 </div>
               </div>
-
-              <div className="bg-slate-800 rounded-2xl p-4 mt-1 border border-slate-700 relative overflow-hidden shadow-lg focus-within:ring-2 focus-within:ring-yellow-500/50 transition-all">
-                <div className="absolute -right-4 -bottom-4 opacity-10 text-white pointer-events-none">
-                  <Coins className="w-24 h-24" />
-                </div>
-                <label className="text-xs font-bold text-slate-400 font-montserrat uppercase tracking-widest block mb-2 relative z-10">한국 원 (KRW)</label>
-                <div className="flex items-center justify-between relative z-10">
-                  <span className="text-2xl font-black text-slate-500">₩</span>
-                  <input 
-                    type="text"
-                    inputMode="numeric"
-                    value={formatNum(krwVal)}
-                    onChange={handleKrwChange}
-                    className="w-full bg-transparent text-right text-4xl font-black font-montserrat text-yellow-400 focus:outline-none"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex flex-col justify-center items-center gap-1">
-              <p className="text-[11px] text-slate-500 font-medium font-jua">양쪽 칸 모두 자유롭게 숫자를 입력할 수 있습니다.</p>
-              <p className="text-[10px] text-slate-400 font-jua mt-1 tracking-wide">데이터 제공: 실시간 글로벌 외환 API</p>
             </div>
           </div>
         </div>
@@ -926,7 +988,7 @@
 
     const EventCard = ({ event }) => (
       <div className="group relative bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-100/80 flex flex-col h-full hover:-translate-y-1.5 overflow-hidden">
-        <div className="relative h-56 overflow-hidden bg-gray-100">
+        <div className="relative h-48 md:h-56 overflow-hidden bg-gray-100">
           <img src={event.image} alt={event.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
           <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-sm font-bold text-gray-800 shadow-sm flex items-center gap-1.5 font-montserrat">
@@ -957,7 +1019,7 @@
     );
 
     const EndOfDayCard = ({ day }) => (
-      <div className="group relative overflow-hidden rounded-[2rem] shadow-sm border border-slate-100 h-full min-h-[300px] flex items-center justify-center p-3">
+      <div className="group relative overflow-hidden rounded-[2rem] shadow-sm border border-slate-100 h-full min-h-[250px] flex items-center justify-center p-3">
         <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden flex items-center justify-center">
             <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800" alt="Relaxing Hotel Room" className="absolute inset-0 w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-700" />
             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors duration-500" />
@@ -965,27 +1027,99 @@
             <div className="bg-white/20 backdrop-blur-md p-4 rounded-full inline-block mb-4 shadow-lg border border-white/10">
                 <BedDouble className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-2xl font-bold mb-2 tracking-wide font-jua">Day {day} 일정 종료</h3>
-            <p className="text-sm text-gray-200 font-light opacity-90 mt-1">편안한 휴식으로 에너지를 충전하세요</p>
+            <h3 className="text-xl md:text-2xl font-bold mb-2 tracking-wide font-jua">Day {day} 일정 종료</h3>
             </div>
         </div>
       </div>
     );
 
+    // --- 로딩 화면 컴포넌트 ---
+    const LoadingScreen = () => (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 relative overflow-hidden text-white">
+        <div className="absolute inset-0 z-0">
+          <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei" className="w-full h-full object-cover object-center brightness-50" />
+          <div className="absolute inset-0 bg-gray-900/80" />
+        </div>
+        <div className="relative z-10 flex flex-col items-center animate-pulse">
+          <RefreshCcw className="w-12 h-12 animate-spin text-[#FFD700] mb-4" />
+          <h2 className="text-2xl font-jua tracking-wide">최신 명단 동기화 중...</h2>
+          <p className="text-sm font-montserrat text-gray-400 mt-2">Connecting to Google Sheets</p>
+        </div>
+      </div>
+    );
+
     function App() {
-      const [selectedDay, setSelectedDay] = useState(null);
+      // 인증(Login) 상태 관리
+      const [user, setUser] = useState(null);
+      const [employeeDb, setEmployeeDb] = useState({});
+      const [isLoadingDb, setIsLoadingDb] = useState(true);
       
+      const [selectedDay, setSelectedDay] = useState(null);
+      const [liveWeather, setLiveWeather] = useState(null);
+      const [liveExchange, setLiveExchange] = useState("42.50"); 
+      
+      // 모달 상태 관리 복원
       const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
       const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
       const [isTipsModalOpen, setIsTipsModalOpen] = useState(false);
       const [isPhrasesModalOpen, setIsPhrasesModalOpen] = useState(false);
       const [isMapModalOpen, setIsMapModalOpen] = useState(false);
       const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
-      
-      const [liveWeather, setLiveWeather] = useState(null);
-      const [liveExchange, setLiveExchange] = useState("42.50"); 
+
+      // --- 구글 시트 연동 및 자동 로그인 로직 ---
+      useEffect(() => {
+        const sheetId = "16tb2c6e99siz6krX-cDJv0yFc-hkVBBsbFZ9H55_IVc";
+        const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+
+        Papa.parse(csvUrl, {
+          download: true,
+          header: true,
+          complete: (results) => {
+            const db = {};
+            results.data.forEach(row => {
+              const empId = row['사번']?.trim();
+              if (empId) {
+                db[empId] = {
+                  empId: empId,
+                  name: row['성명']?.trim() || "",
+                  dept: row['소속']?.trim() || "",
+                  day1: row['1일차']?.trim() || "",
+                  bus1: row['1일차 버스']?.trim() || "",
+                  day2: row['2일차']?.trim() || "",
+                  bus2: row['2일차 버스']?.trim() || "",
+                  day3: row['3일차']?.trim() || "",
+                  bus3: row['3일차 버스']?.trim() || "",
+                  flightOut: row['출국항공']?.trim() || "",
+                  flightIn: row['귀국항공']?.trim() || ""
+                };
+              }
+            });
+            
+            setEmployeeDb(db);
+            setIsLoadingDb(false);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const qId = urlParams.get('id') || urlParams.get('empId');
+            if (qId && db[qId]) {
+              setUser(db[qId]);
+            }
+          },
+          error: (err) => {
+            console.error("데이터 로드 실패:", err);
+            setIsLoadingDb(false);
+            
+            const fallbackDB = {
+              "1611499": { empId: "1611499", name: "최진우(테스트)", dept: "마케팅", day1: "시내 하이라이트", bus1: "1호차", day2: "티엔라이 온천 힐링", bus2: "1호차", day3: "예스지 투어", bus3: "1호차" }
+            };
+            setEmployeeDb(fallbackDB);
+            
+            alert("구글 시트 연동 중 보안(CORS) 에러가 발생했습니다.\n\n해결방법: 구글 시트 상단 메뉴에서 [파일] -> [공유] -> [웹에 게시]를 클릭한 후 '게시' 버튼을 눌러주세요.\n\n임시로 테스트 계정(1611499)으로 구동합니다.");
+          }
+        });
+      }, []);
 
       useEffect(() => {
+        // 주간/시간별 날씨 데이터를 가져오기 위해 원래의 전체 API 주소로 복원
         fetch('https://api.open-meteo.com/v1/forecast?latitude=25.0478&longitude=121.5319&current=temperature_2m,relative_humidity_2m,weather_code&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTaipei')
           .then(res => res.json())
           .then(data => setLiveWeather(data))
@@ -1001,50 +1135,58 @@
           .catch(err => console.error("Exchange API error", err));
       }, []);
 
+      const handleLogout = () => {
+        setUser(null);
+        if (window.history.pushState) {
+          const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+          window.history.pushState({path:newurl},'',newurl);
+        }
+      };
+
+      if (isLoadingDb) {
+        return <LoadingScreen />;
+      }
+
+      if (!user) {
+        return <LoginScreen onLogin={setUser} employeeDb={employeeDb} />;
+      }
+
+      const tripData = getPersonalizedTripData(user);
+
       return (
         <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100 pb-20">
-          <header className="relative flex flex-col w-full min-h-[650px] lg:min-h-[85vh] overflow-hidden bg-gray-900">
+          <header className="relative flex flex-col w-full min-h-[400px] md:min-h-[500px] overflow-hidden bg-gray-900">
             <div className="absolute inset-0 z-0">
-              <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei City Morning Vibe" className="w-full h-full object-cover object-center brightness-95" />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
+              <img src="https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&q=80&w=2000" alt="Taipei City" className="w-full h-full object-cover object-center brightness-75" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-slate-50" />
             </div>
             
             <nav className="relative z-10 w-full p-4 md:p-6 flex justify-between items-center text-white">
-              <div className="text-lg md:text-xl font-black tracking-tight bg-black/20 backdrop-blur-md px-5 py-2 rounded-full border border-white/20 font-montserrat shadow-lg">
+              <div className="text-lg md:text-xl font-black tracking-tight bg-black/30 backdrop-blur-md px-5 py-2 rounded-full border border-white/20 font-montserrat shadow-lg">
                 INCAR TRIP
               </div>
             </nav>
 
-            <div className="relative z-10 flex-1 min-h-[40px]"></div>
-
-            <div className="relative z-10 w-full px-6 md:px-12 pb-20 md:pb-28 max-w-6xl mx-auto flex flex-col justify-end">
-              <div className="text-4xl md:text-5xl lg:text-6xl font-montserrat font-black text-[#FFD700] mb-2 tracking-[0.15em] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] self-start">
+            <div className="relative z-10 w-full px-4 md:px-12 pt-10 pb-6 max-w-6xl mx-auto flex flex-col justify-end">
+              <div className="text-3xl md:text-5xl font-montserrat font-black text-[#FFD700] mb-1 tracking-[0.1em] drop-shadow-lg">
                 2025
               </div>
-              <div className="inline-block relative self-start">
-                  <h1 className="text-7xl sm:text-8xl md:text-[8rem] lg:text-[9.5rem] text-white font-playfair font-bold custom-logo-text drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] z-20 relative pr-4">
-                    <span className="ml-[-0.05em]">Incar</span>
-                    <span className="ml-[0.05em]">Spring Camp</span>
-                  </h1>
-                  <p className="absolute -bottom-8 right-10 md:-bottom-12 md:right-16 lg:-bottom-14 lg:right-28 text-[#FFD700] text-3xl md:text-[2.5rem] font-playfair font-bold italic drop-shadow-lg tracking-wide z-30">
-                    in Taiwan
-                  </p>
-              </div>
-              <div className="mt-20 flex flex-wrap items-center gap-3 text-white/90">
-                <div className="flex items-center gap-2 bg-blue-600/95 backdrop-blur-md px-5 py-3 rounded-2xl text-sm md:text-base font-bold shadow-xl shadow-blue-900/30 font-montserrat tracking-wide border border-blue-400/30">
-                  <CalendarDays className="w-5 h-5" />
-                  {tripData.dates}
-                </div>
-                <span className="hidden lg:inline text-white/40 mx-2 text-xl font-light">|</span>
-                <p className="text-sm md:text-base text-gray-200 font-medium font-jua w-full lg:w-auto mt-3 lg:mt-0 drop-shadow-md">
-                  {tripData.description}
-                </p>
+              <h1 className="text-5xl md:text-7xl text-white font-playfair font-bold drop-shadow-xl z-20">
+                Spring Camp
+              </h1>
+              <div className="mt-4 flex items-center gap-2 bg-black/40 w-fit backdrop-blur-md px-4 py-2 rounded-xl text-sm md:text-base font-bold shadow-xl font-montserrat tracking-wide text-white">
+                <CalendarDays className="w-4 h-4" />
+                {tripData.dates}
               </div>
             </div>
           </header>
 
-          <main className="max-w-6xl mx-auto px-4 py-8 -mt-4 md:-mt-6 relative z-20">
+          <main className="max-w-6xl mx-auto px-4 relative z-20 -mt-8">
             <div className="animate-fade-in-up">
+              <PersonalDashboard user={user} onLogout={handleLogout} />
+            </div>
+
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
               <QuickInfoBoard 
                 onOpenWeather={() => setIsWeatherModalOpen(true)} 
                 onOpenExchange={() => setIsExchangeModalOpen(true)}
@@ -1053,8 +1195,8 @@
               />
             </div>
 
-            {/* Travel Tools 아코디언 추가 */}
-            <div className="animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
+            {/* Travel Tools 아코디언 추가 (기능 모두 동작) */}
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.08s' }}>
               <TravelToolsAccordion 
                 onOpenTips={() => setIsTipsModalOpen(true)}
                 onOpenPhrases={() => setIsPhrasesModalOpen(true)}
@@ -1063,7 +1205,7 @@
               />
             </div>
 
-            <div className="flex flex-col gap-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <div className="flex flex-col gap-4 animate-fade-in-up mt-6" style={{ animationDelay: '0.1s' }}>
               {tripData.days.map((day) => {
                 const isExpanded = selectedDay === day.day;
                 
@@ -1077,29 +1219,22 @@
                           : 'bg-white hover:bg-red-50/40 border-slate-200'
                       }`}
                     >
-                      {isExpanded && (
-                        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FFD700 1.5px, transparent 1.5px)', backgroundSize: '24px 24px' }}></div>
-                      )}
-
                       <div className="flex items-center gap-4 md:gap-6 relative z-10">
-                        <div className={`flex flex-col items-center justify-center w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-[1.1rem] bg-[#8B1D1D] text-white shadow-md relative overflow-hidden transition-transform duration-500 ${isExpanded ? 'scale-105 shadow-red-900/40' : 'group-hover:scale-105'}`}>
-                          <div className="absolute inset-[4px] border border-white/30 rounded-[0.8rem] pointer-events-none"></div>
-                          <span className="font-jua text-base md:text-xl leading-none whitespace-nowrap mt-1">{chineseDays[day.day]}</span>
-                          <span className="font-montserrat text-[10px] md:text-xs font-black tracking-widest mt-1.5 opacity-90 whitespace-nowrap">DAY {day.day}</span>
+                        <div className={`flex flex-col items-center justify-center w-16 h-16 flex-shrink-0 rounded-[1.1rem] bg-[#8B1D1D] text-white shadow-md relative overflow-hidden transition-transform duration-500 ${isExpanded ? 'scale-105 shadow-red-900/40' : 'group-hover:scale-105'}`}>
+                          <span className="font-jua text-base leading-none">{chineseDays[day.day]}</span>
+                          <span className="font-montserrat text-[10px] font-black tracking-widest mt-1.5 opacity-90">DAY {day.day}</span>
                         </div>
-
                         <div>
-                          <h2 className={`text-xl md:text-2xl lg:text-3xl font-black font-montserrat tracking-tight transition-colors duration-500 ${isExpanded ? 'text-white' : 'text-slate-800'}`}>
+                          <h2 className={`text-xl md:text-2xl font-black font-montserrat tracking-tight transition-colors duration-500 ${isExpanded ? 'text-white' : 'text-slate-800'}`}>
                             {day.date}
                           </h2>
-                          <p className={`text-sm md:text-base font-jua mt-1 transition-colors duration-500 ${isExpanded ? 'text-[#FFD700]' : 'text-slate-500'}`}>
+                          <p className={`text-sm font-jua mt-1 transition-colors duration-500 ${isExpanded ? 'text-[#FFD700]' : 'text-slate-500'}`}>
                             {day.title}
                           </p>
                         </div>
                       </div>
-
                       <div className={`p-2.5 rounded-full transition-all duration-500 relative z-10 ${isExpanded ? 'bg-white/10 text-[#FFD700]' : 'bg-slate-100 text-slate-400'}`}>
-                        <ChevronDownIcon className={`w-5 h-5 md:w-6 md:h-6 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`} />
+                        <ChevronDownIcon className={`w-5 h-5 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`} />
                       </div>
                     </button>
 
@@ -1119,7 +1254,6 @@
                 );
               })}
             </div>
-
           </main>
 
           <footer className="bg-slate-100 border-t border-slate-200 py-12 mt-10 text-center text-slate-400 text-sm">
@@ -1127,9 +1261,9 @@
             <p className="mt-2 text-xs text-slate-400 font-jua opacity-80">Designed with First Principles.</p>
           </footer>
 
+          {/* 모달 렌더링을 완전히 복구합니다 */}
           <WeatherModal isOpen={isWeatherModalOpen} onClose={() => setIsWeatherModalOpen(false)} liveWeather={liveWeather} />
           <ExchangeModal isOpen={isExchangeModalOpen} onClose={() => setIsExchangeModalOpen(false)} liveExchange={liveExchange} />
-          
           <TipsModal isOpen={isTipsModalOpen} onClose={() => setIsTipsModalOpen(false)} />
           <PhrasesModal isOpen={isPhrasesModalOpen} onClose={() => setIsPhrasesModalOpen(false)} />
           <MapModal isOpen={isMapModalOpen} onClose={() => setIsMapModalOpen(false)} />
